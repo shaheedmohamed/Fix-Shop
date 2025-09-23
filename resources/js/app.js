@@ -5,7 +5,13 @@
  */
 
 import './bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../css/tailwind.css';
+import '../css/animations.css';
+import './assets/css/custom.css';
 import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -13,10 +19,26 @@ import { createApp } from 'vue';
  * to use in your application's views. An example is included for you.
  */
 
-const app = createApp({});
+const app = createApp(App);
 
-import ExampleComponent from './components/ExampleComponent.vue';
-app.component('example-component', ExampleComponent);
+// Global on-scroll reveal directive
+app.directive('reveal', {
+  mounted(el) {
+    el.classList.add('reveal');
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('revealed');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    io.observe(el);
+  }
+});
+
+// Use router for page navigation
+app.use(router);
 
 /**
  * The following block of code may be used to automatically register your

@@ -1,0 +1,53 @@
+/* Smart Path custom UI utilities and animations */
+:root{
+  --sp-primary:#5b6cff;
+  --sp-secondary:#8a5bff;
+  --sp-accent:#f2b705;
+}
+
+/* gradients */
+.text-gradient{
+  background: linear-gradient(90deg, var(--sp-primary), var(--sp-secondary));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.bg-gradient-primary{
+  background: linear-gradient(135deg, var(--sp-primary), var(--sp-secondary)) !important;
+}
+
+/* cards */
+.card-hover{ transition: transform .25s ease, box-shadow .25s ease; }
+.card-hover:hover{ transform: translateY(-4px); box-shadow:0 .75rem 1.5rem rgba(0,0,0,.08) !important; }
+
+/* buttons */
+.btn-shine{ position:relative; overflow:hidden; }
+.btn-shine::after{
+  content:""; position:absolute; inset:0; transform:translateX(-120%);
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.35), transparent);
+  transition: transform .6s ease;
+}
+.btn-shine:hover::after{ transform: translateX(120%); }
+
+/* icon pulse */
+.icon-pulse{ animation: iconPulse 2s ease-in-out infinite; }
+@keyframes iconPulse{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.08) } }
+
+/* reveal utilities (works with v-reveal adding .revealed) */
+[v-reveal]{ opacity:0; transform: translateY(16px); transition: all .5s ease; }
+.revealed{ opacity:1; transform:none; }
+
+/* timeline utility (compatible with animations.css structure) */
+.timeline{ position:relative; margin-left:1rem; }
+.timeline::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:rgba(91,108,255,.25); }
+.timeline-step{ position:relative; padding-left:1.5rem; margin-bottom:1rem; }
+.timeline-step .dot{ position:absolute; left:-6px; top:.25rem; width:10px; height:10px; border-radius:50%; background:var(--sp-primary); }
+
+/* navbar glass support if not present */
+.nav-glass{ backdrop-filter:saturate(120%) blur(10px); background-color: rgba(255,255,255,.6) !important; }
+
+/* spacing tweaks */
+.py-lg-6{ padding-top:5rem !important; padding-bottom:5rem !important; }
+
+/* route transitions */
+.route-fade-enter-active, .route-fade-leave-active{ transition: opacity .35s ease, transform .35s ease; }
+.route-fade-enter-from{ opacity:0; transform: translateY(8px); }
+.route-fade-leave-to{ opacity:0; transform: translateY(-8px); }

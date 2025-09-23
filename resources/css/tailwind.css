@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Optional: small overrides to coexist with Bootstrap */
+@layer base {
+  :root { color-scheme: light; }
+}
+
+@layer utilities {
+  .container { @apply mx-auto px-4; }
+}
