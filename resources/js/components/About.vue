@@ -5,7 +5,7 @@
         <div class="col-lg-10">
           <div class="text-center" v-reveal>
             <span class="badge bg-gradient-primary text-white shadow-sm">Digitopia 2025</span>
-            <h1 class="fw-bold mt-3">About Smart Path</h1>
+            <h1 class="fw-bold mt-3">About Fix & Shop</h1>
             <p class="text-muted">Our vision is to empower every learner with an AI that teaches their way.</p>
           </div>
         </div>
@@ -16,7 +16,7 @@
           <div class="p-4 rounded-4 bg-white shadow-sm h-100">
             <h5 class="fw-semibold mb-3"><i class="fa-solid fa-people-group me-2"></i>Team & Competition</h5>
             <p class="text-muted">We are a passionate team competing in Digitopia 2025, building tools for students, teachers, and parents.</p>
-            <p class="text-muted mb-0">Smart Path blends pedagogy with AI to personalize learning journeys at scale.</p>
+            <p class="text-muted mb-0">Fix & Shop blends pedagogy with AI to personalize learning journeys at scale.</p>
           </div>
         </div>
         <div class="col-lg-6" v-reveal>

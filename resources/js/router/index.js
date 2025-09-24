@@ -144,7 +144,7 @@ router.beforeEach(async (to) => {
 })
 
 // Dynamic page titles
-const DEFAULT_TITLE = 'SmartPath'
+const DEFAULT_TITLE = 'Fix & Shop'
 router.afterEach((to) => {
   const nearestWithTitle = [...to.matched].reverse().find(r => r.meta && r.meta.title)
   if (nearestWithTitle) {

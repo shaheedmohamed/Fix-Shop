@@ -39,7 +39,7 @@
               <div class="fs-3 text-primary me-2"><i class="fa-solid fa-envelope"></i></div>
               <div>
                 <div class="fw-semibold">Email</div>
-                <div class="text-muted">hello@smartpath.ai</div>
+                <div class="text-muted">hello@fix & shop.ai</div>
               </div>
             </div>
             <div class="d-flex align-items-center">

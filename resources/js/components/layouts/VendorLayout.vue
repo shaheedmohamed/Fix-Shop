@@ -2,7 +2,7 @@
   <div class="admin-wrap">
     <aside class="admin-aside">
       <div class="brand d-flex align-items-center mb-3">
-        <img src="/images/2-removebg-preview.png" alt="Smart Path" class="brand-logo me-2" />
+        <img src="/images/2-removebg-preview.png" alt="Fix & Shop" class="brand-logo me-2" />
         <div class="fw-bold">Vendor Panel</div>
       </div>
       <div class="menu">

@@ -4,8 +4,8 @@
       <div class="container py-5">
         <div class="row align-items-center gy-4">
           <div class="col-lg-6" v-reveal>
-            <span class="badge bg-gradient-primary text-white mb-3 shadow-sm">Smart Path · Digitopia 2025</span>
-            <img src="/images/logo-smartpath.png" alt="Smart Path" class="hero-logo mb-2" />
+            <span class="badge bg-gradient-primary text-white mb-3 shadow-sm">Fix & Shop · Digitopia 2025</span>
+            <img src="/images/logo-fix & shop.png" alt="Fix & Shop" class="hero-logo mb-2" />
             <h1 class="display-5 fw-bold text-gradient">AI that teaches you your way</h1>
             <p class="lead text-muted mt-3">Personalized lessons, an always-on AI tutor, and smart reminders.</p>
             <div class="d-flex gap-3 mt-4">
@@ -19,7 +19,7 @@
           </div>
           <div class="col-lg-6" v-reveal>
             <div class="ratio ratio-16x9 rounded-4 shadow overflow-hidden bg-white" data-parallax data-speed="0.15">
-              <img src="/images/hero2.jpg" alt="Smart Path Hero" class="w-100 h-100 animate-float" style="object-fit: cover;" />
+              <img src="/images/hero2.jpg" alt="Fix & Shop Hero" class="w-100 h-100 animate-float" style="object-fit: cover;" />
             </div>
           </div>
         </div>

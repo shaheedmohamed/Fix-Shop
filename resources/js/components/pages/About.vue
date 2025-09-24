@@ -5,7 +5,7 @@
       <div class="container position-relative">
         <div class="row align-items-center gy-4">
           <div class="col-lg-7" v-reveal>
-            <span class="badge bg-gradient-primary text-white shadow-sm">Smart Path • About</span>
+            <span class="badge bg-gradient-primary text-white shadow-sm">Fix & Shop • About</span>
             <h1 class="display-5 fw-bold mt-3 text-gradient">Shaping the future of learning</h1>
             <p class="lead text-muted mt-2">We combine pedagogy, design, and AI to deliver learning that adapts to every student.</p>
             <div class="d-flex gap-3 mt-3">

@@ -2,8 +2,8 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm nav-glass" v-reveal>
     <div class="container">
       <a class="navbar-brand d-flex align-items-center fw-bold" href="#top">
-        <img src="/images/logo-smartpath.png" alt="Smart Path Logo" class="me-2 brand-logo" />
-        <span>Smart Path</span>
+        <img src="/images/logo-fix & shop.png" alt="Fix & Shop Logo" class="me-2 brand-logo" />
+        <span>Fix & Shop</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>

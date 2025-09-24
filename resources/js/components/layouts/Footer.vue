@@ -10,7 +10,7 @@
         <div class="col-12 col-lg-4">
           <div class="d-flex align-items-center gap-2 mb-3">
             <i class="fa-solid fa-graduation-cap fs-3"></i>
-            <h5 class="mb-0 fw-bold">Smart Path</h5>
+            <h5 class="mb-0 fw-bold">Fix & Shop</h5>
           </div>
           <p class="text-white-50 mb-4">Personalized learning, an always-on AI tutor, and smart reminders to keep you on track.</p>
 
@@ -74,7 +74,7 @@
 
       <!-- Bottom bar -->
       <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3 py-3">
-        <div class="text-white-50">© {{ new Date().getFullYear() }} Smart Path. All rights reserved.</div>
+        <div class="text-white-50">© {{ new Date().getFullYear() }} Fix & Shop. All rights reserved.</div>
         <div class="d-flex flex-wrap gap-3">
           <RouterLink to="/terms" class="link">Terms</RouterLink>
           <RouterLink to="/privacy" class="link">Privacy</RouterLink>

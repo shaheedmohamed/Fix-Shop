@@ -10,7 +10,7 @@
         <!-- Brand -->
         <RouterLink class="brand d-flex align-items-center text-decoration-none" :to="{ name: 'home' }" @click="closeMenu">
           <i class="fa-solid fa-graduation-cap fs-4 me-2"></i>
-          <span class="fw-bold">Smart Path</span>
+          <span class="fw-bold">Fix & Shop</span>
         </RouterLink>
 
         <!-- Toggler -->

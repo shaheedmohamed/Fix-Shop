@@ -6,8 +6,8 @@
       <div class="container py-5">
         <div class="row align-items-center gy-4">
           <div class="col-lg-6" v-reveal>
-            <span class="badge bg-gradient-primary text-white mb-3 shadow-sm">Smart Path · Digitopia 2025</span>
-            <img src="/images/logo-smartpath.png" alt="Smart Path" class="hero-logo mb-2" />
+            <span class="badge bg-gradient-primary text-white mb-3 shadow-sm">Fix & Shop · Digitopia 2025</span>
+            <img src="/images/logo-fix & shop.png" alt="Fix & Shop" class="hero-logo mb-2" />
             <h1 class="display-5 fw-bold text-gradient">AI that teaches you your way</h1>
             <p class="lead text-muted mt-3">
               Personalized lessons, an always-on AI tutor, and smart reminders – built for students, teachers, and parents.
@@ -85,7 +85,7 @@
     <section id="how" class="py-5 bg-light">
       <div class="container">
         <div class="text-center mb-4" v-reveal>
-          <h2 class="fw-bold">How Smart Path works</h2>
+          <h2 class="fw-bold">How Fix & Shop works</h2>
         </div>
         <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-lg-4">
           <div class="col" v-reveal>
@@ -123,7 +123,7 @@
     <!-- Footer -->
     <footer id="contact" class="py-4 border-top bg-white">
       <div class="container d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3">
-        <div class="text-muted">© {{ new Date().getFullYear() }} Smart Path</div>
+        <div class="text-muted">© {{ new Date().getFullYear() }} Fix & Shop</div>
         <div class="d-flex gap-3 fs-5">
           <a href="#" class="text-decoration-none"><i class="fa-brands fa-facebook"></i></a>
           <a href="#" class="text-decoration-none"><i class="fa-brands fa-x-twitter"></i></a>

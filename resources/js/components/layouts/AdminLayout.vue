@@ -3,8 +3,8 @@
     <!-- Sidebar -->
     <aside class="admin-aside">
       <div class="brand d-flex align-items-center mb-3">
-        <img src="/images/2-removebg-preview.png" alt="Smart Path" class="brand-logo me-2" />
-        <div class="fw-bold">Smart Path</div>
+        <img src="/images/2-removebg-preview.png" alt="Fix & Shop" class="brand-logo me-2" />
+        <div class="fw-bold">Fix & Shop</div>
       </div>
 
       <div class="menu">
@@ -71,9 +71,9 @@ export default {
   name: 'AdminLayout',
   setup(){
     const route = useRoute()
-    const userName = computed(() => auth.state.user?.name || 'Smart Path')
+    const userName = computed(() => auth.state.user?.name || 'Fix & Shop')
     const initials = computed(() => {
-      const name = auth.state.user?.name?.trim() || 'Smart Path'
+      const name = auth.state.user?.name?.trim() || 'Fix & Shop'
       const parts = name.split(/\s+/)
       let letters = parts.map(p => p[0] || '').join('')
       if (letters.length < 2) letters = (name.slice(0,2))
