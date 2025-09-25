@@ -105,7 +105,7 @@
                     </div>
                   </div>
                   <div class="d-flex gap-3">
-                    <small class="text-muted">{{ post.comments_count || 0 }} comments</small>
+                    <small class="text-muted">{{ post.comments_count || post.comments?.length || 0 }} comments</small>
                     <small class="text-muted">{{ post.shares_count || 0 }} shares</small>
                   </div>
                 </div>
@@ -295,9 +295,8 @@ export default {
           liked: false,
           showComments: false,
           newComment: '',
-          comments: [],
+          comments: post.comments || [],
           likes_count: Math.floor(Math.random() * 50),
-          comments_count: Math.floor(Math.random() * 20),
           shares_count: Math.floor(Math.random() * 10)
         }))
       } catch (e) {
@@ -379,34 +378,34 @@ export default {
       post.likes_count += post.liked ? 1 : -1
     },
 
-    toggleComments(post) {
+    async toggleComments(post) {
       post.showComments = !post.showComments
-      if (post.showComments && post.comments.length === 0) {
-        // Load comments (mock data for now)
-        post.comments = [
-          {
-            id: 1,
-            content: 'Great post!',
-            user: { name: 'John Doe' },
-            created_at: new Date().toISOString()
-          }
-        ]
+      if (post.showComments && (!post.comments || post.comments.length === 0)) {
+        try {
+          const { data } = await axios.get(`/api/posts/${post.id}/comments`)
+          post.comments = data || []
+        } catch (error) {
+          console.error('Failed to load comments:', error)
+          post.comments = []
+        }
       }
     },
 
-    addComment(post) {
+    async addComment(post) {
       if (!post.newComment.trim()) return
       
-      const comment = {
-        id: Date.now(),
-        content: post.newComment,
-        user: { name: this.userName },
-        created_at: new Date().toISOString()
+      try {
+        const { data } = await axios.post(`/api/posts/${post.id}/comments`, {
+          content: post.newComment
+        })
+        
+        post.comments.push(data)
+        post.comments_count = (post.comments_count || 0) + 1
+        post.newComment = ''
+      } catch (error) {
+        console.error('Failed to add comment:', error)
+        alert('Failed to add comment. Please try again.')
       }
-      
-      post.comments.push(comment)
-      post.comments_count++
-      post.newComment = ''
     },
 
     sharePost(post) {

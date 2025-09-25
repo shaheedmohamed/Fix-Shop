@@ -24,9 +24,8 @@
         <div class="links-wrapper" :class="{ open: isOpen }">
           <ul class="nav-list">
             <li><RouterLink class="nav-link" :to="{ name: 'home' }" @click="closeMenu">Home</RouterLink></li>
-            <li><RouterLink class="nav-link" :to="{ name: 'features' }" @click="closeMenu">Features</RouterLink></li>
+            <li><RouterLink class="nav-link" to="/posts" @click="closeMenu">Posts</RouterLink></li>
             <li><RouterLink class="nav-link" :to="{ name: 'about' }" @click="closeMenu">About</RouterLink></li>
-            <li><RouterLink class="nav-link" :to="{ name: 'contact' }" @click="closeMenu">Contact</RouterLink></li>
             <li><RouterLink class="nav-link" :to="{ name: 'products' }" @click="closeMenu">Products</RouterLink></li>
             <li v-if="isAdminUser">
               <RouterLink class="nav-link admin-link" :to="{ name: 'admin-dashboard' }" @click="closeMenu">
@@ -48,6 +47,10 @@
               <button class="btn btn-light position-relative me-2" @click="toggleCart" title="Cart">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span v-if="cartCount>0" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">{{ cartCount }}</span>
+              </button>
+              <button class="btn btn-light position-relative me-2" @click="$router.push({ name: 'messages' })" title="Notifications">
+                <i class="fa-regular fa-bell"></i>
+                <span v-if="store.state.unreadCount>0" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">{{ store.state.unreadCount }}</span>
               </button>
               <div class="dropdown" ref="dropdownWrap">
                 <button class="btn btn-light d-flex align-items-center" @click="toggleDropdown" :aria-expanded="dropdown ? 'true' : 'false'" aria-haspopup="menu">

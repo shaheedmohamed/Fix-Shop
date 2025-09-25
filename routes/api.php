@@ -361,6 +361,69 @@ Route::middleware('auth:sanctum')->group(function(){
     });
 });
 
+// Posts endpoints
+Route::middleware('auth:sanctum')->group(function(){
+    Route::post('/posts', function(Request $request) {
+        $user = $request->user();
+        
+        $data = $request->validate([
+            'content' => 'required|string|max:2000',
+            'image' => 'nullable|image|max:2048'
+        ]);
+        
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('img', 'public');
+        }
+        
+        $post = App\Models\Post::create([
+            'user_id' => $user->id,
+            'content' => $data['content'],
+            'image_path' => $imagePath
+        ]);
+        
+        $post->load('user:id,name');
+        return response()->json($post, 201);
+    });
+    
+    Route::get('/posts', function(Request $request) {
+        $posts = App\Models\Post::with(['user:id,name', 'comments.user:id,name'])
+            ->withCount('comments')
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+            
+        return response()->json($posts);
+    });
+    
+    // Comments endpoints
+    Route::post('/posts/{post}/comments', function(Request $request, $postId) {
+        $user = $request->user();
+        
+        $data = $request->validate([
+            'content' => 'required|string|max:1000'
+        ]);
+        
+        $comment = App\Models\Comment::create([
+            'post_id' => $postId,
+            'user_id' => $user->id,
+            'content' => $data['content']
+        ]);
+        
+        $comment->load('user:id,name');
+        return response()->json($comment, 201);
+    });
+    
+    Route::get('/posts/{post}/comments', function($postId) {
+        $comments = App\Models\Comment::where('post_id', $postId)
+            ->with('user:id,name')
+            ->orderBy('created_at')
+            ->get();
+            
+        return response()->json($comments);
+    });
+});
+
 // Public Products endpoints
 Route::get('/products', function(){
     try {
