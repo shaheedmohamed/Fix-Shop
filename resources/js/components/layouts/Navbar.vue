@@ -1,5 +1,7 @@
 <template>
-  <transition name="fade-slide">
+  <div class="nav-stack">
+    <UtilityBar />
+    <transition name="fade-slide">
     <nav
       class="sp-navbar sticky-top"
       :class="{ 'scrolled': isScrolled }"
@@ -94,7 +96,9 @@
       <!-- subtle top glow -->
       <div class="top-glow"></div>
     </nav>
-  </transition>
+    </transition>
+    <SecondaryNav />
+  </div>
 </template>
 
 <script>
@@ -102,9 +106,12 @@ import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import auth from '../../store/auth'
 import store from '../../store/messages'
 import cart from '../../store/cart'
+import UtilityBar from './UtilityBar.vue'
+import SecondaryNav from './SecondaryNav.vue'
 
 export default {
   name: 'NavbarLayout',
+  components: { UtilityBar, SecondaryNav },
   setup(_, { emit, expose }){
     const isOpen = ref(false)
     const dropdown = ref(false)

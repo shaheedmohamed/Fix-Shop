@@ -98,10 +98,12 @@
                 <div class="post-stats d-flex justify-content-between align-items-center py-2 border-top border-bottom">
                   <div class="d-flex align-items-center gap-2">
                     <div class="reactions">
-                      <span class="reaction-icon">👍</span>
-                      <span class="reaction-icon">❤️</span>
-                      <span class="reaction-icon">😂</span>
-                      <small class="text-muted ms-1">{{ post.likes_count || 0 }}</small>
+                      <template v-if="totalReactions(post) > 0">
+                        <span v-if="post.reactions.like>0" class="reaction-icon" title="Likes">👍</span>
+                        <span v-if="post.reactions.love>0" class="reaction-icon" title="Loves">❤️</span>
+                        <span v-if="post.reactions.haha>0" class="reaction-icon" title="Haha">😂</span>
+                      </template>
+                      <small class="text-muted ms-1">{{ totalReactions(post) }}</small>
                     </div>
                   </div>
                   <div class="d-flex gap-3">
@@ -112,10 +114,17 @@
 
                 <!-- Post Actions -->
                 <div class="post-actions mt-2">
-                  <button class="btn btn-light flex-fill" @click="toggleLike(post)">
-                    <i class="fa-solid fa-thumbs-up me-2" :class="{ 'text-primary': post.liked }"></i>
-                    Like
-                  </button>
+                  <div class="reaction-wrapper flex-fill" @mouseenter="post.showReactionPicker=true" @mouseleave="post.showReactionPicker=false">
+                    <button class="btn btn-light w-100" @click="toggleLike(post)">
+                      <i class="fa-solid fa-thumbs-up me-2" :class="{ 'text-primary': post.myReaction==='like' }"></i>
+                      {{ post.myReaction ? reactionLabel(post.myReaction) : 'Like' }}
+                    </button>
+                    <div v-if="post.showReactionPicker" class="reaction-picker shadow-sm">
+                      <button type="button" class="reaction-btn" @click="setReaction(post,'like')" title="Like">👍</button>
+                      <button type="button" class="reaction-btn" @click="setReaction(post,'love')" title="Love">❤️</button>
+                      <button type="button" class="reaction-btn" @click="setReaction(post,'haha')" title="Haha">😂</button>
+                    </div>
+                  </div>
                   <button class="btn btn-light flex-fill" @click="toggleComments(post)">
                     <i class="fa-solid fa-comment me-2"></i>
                     Comment
@@ -128,7 +137,7 @@
 
                 <!-- Comments Section -->
                 <div v-if="post.showComments" class="comments-section mt-3 pt-3 border-top">
-                  <div class="d-flex gap-2 mb-3">
+                  <div v-if="isAuthenticated" class="d-flex gap-2 mb-3">
                     <div class="avatar avatar-sm">
                       <i class="fa-solid fa-user"></i>
                     </div>
@@ -140,6 +149,9 @@
                         </button>
                       </div>
                     </div>
+                  </div>
+                  <div v-else class="alert alert-light border small mb-3" role="alert">
+                    To comment, please <RouterLink :to="{ name: 'login' }">login</RouterLink> or <RouterLink :to="{ name: 'register' }">create an account</RouterLink>.
                   </div>
                   
                   <div v-for="comment in post.comments" :key="comment.id" class="comment mb-2">
@@ -296,6 +308,10 @@ export default {
           showComments: false,
           newComment: '',
           comments: post.comments || [],
+          // reactions state (could later be loaded from API)
+          reactions: post.reactions || { like: 0, love: 0, haha: 0 },
+          myReaction: null,
+          showReactionPicker: false,
           likes_count: Math.floor(Math.random() * 50),
           shares_count: Math.floor(Math.random() * 10)
         }))
@@ -330,6 +346,11 @@ export default {
     },
 
     async createPost() {
+      if (!this.isAuthenticated) {
+        alert('Please login to create a post.')
+        this.$router.push({ name: 'login' })
+        return
+      }
       if (!this.newPost.content.trim()) return
       
       this.submitting = true
@@ -351,6 +372,9 @@ export default {
           showComments: false,
           newComment: '',
           comments: [],
+          reactions: { like: 0, love: 0, haha: 0 },
+          myReaction: null,
+          showReactionPicker: false,
           likes_count: 0,
           comments_count: 0,
           shares_count: 0,
@@ -374,8 +398,35 @@ export default {
     },
 
     toggleLike(post) {
-      post.liked = !post.liked
-      post.likes_count += post.liked ? 1 : -1
+      // toggle simple like using reaction system
+      if (post.myReaction === 'like') {
+        this.setReaction(post, null)
+      } else {
+        this.setReaction(post, 'like')
+      }
+    },
+
+    setReaction(post, type) {
+      // remove previous reaction count
+      const prev = post.myReaction
+      if (prev && post.reactions[prev] !== undefined) {
+        post.reactions[prev] = Math.max(0, (post.reactions[prev] || 0) - 1)
+      }
+      // set new reaction
+      post.myReaction = type || null
+      if (type && post.reactions[type] !== undefined) {
+        post.reactions[type] = (post.reactions[type] || 0) + 1
+      }
+      post.showReactionPicker = false
+    },
+
+    totalReactions(post) {
+      const r = post.reactions || { like: 0, love: 0, haha: 0 }
+      return (r.like || 0) + (r.love || 0) + (r.haha || 0)
+    },
+
+    reactionLabel(r) {
+      return r === 'love' ? 'Love' : r === 'haha' ? 'Haha' : 'Like'
     },
 
     async toggleComments(post) {
@@ -392,6 +443,11 @@ export default {
     },
 
     async addComment(post) {
+      if (!this.isAuthenticated) {
+        alert('Please login to comment.')
+        this.$router.push({ name: 'login' })
+        return
+      }
       if (!post.newComment.trim()) return
       
       try {
@@ -503,6 +559,27 @@ export default {
 .post-actions .btn:hover {
   background: #e4e6ea;
 }
+
+.reaction-wrapper { position: relative; }
+.reaction-picker {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 6px;
+  background: #fff;
+  padding: 6px 8px;
+  border-radius: 999px;
+  display: flex;
+  gap: 6px;
+  z-index: 5;
+}
+.reaction-btn {
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: transform 0.1s ease;
+}
+.reaction-btn:hover { transform: translateY(-2px) scale(1.15); }
 
 .post-image img {
   border-radius: 8px;
