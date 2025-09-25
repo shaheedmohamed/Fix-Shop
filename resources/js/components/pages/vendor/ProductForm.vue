@@ -159,6 +159,12 @@ export default {
       finally{ this.loading = false }
     }
   },
+  computed: {
+    filteredSubcategories() {
+      if (!this.form.category_id) return []
+      return this.subcategories.filter(s => s.category_id == this.form.category_id)
+    }
+  },
   async mounted(){ await this.fetchCatalog() }
 }
 </script>

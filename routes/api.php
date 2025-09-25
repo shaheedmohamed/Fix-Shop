@@ -193,10 +193,17 @@ Route::get('/subjects/{slug}', [SubjectController::class, 'show']);
 
 // Public Products endpoints
 Route::get('/products', function(){
-    $paginator = Product::query()
-        ->select(['id','name','price','price_discount','image_path','description','created_at'])
-        ->orderByDesc('id')
-        ->paginate(20);
+    $q = Product::query()
+        ->select(['id','name','price','price_discount','image_path','description','created_at','category_id']);
+    if ($cat = request('category')) {
+        $q->where('category_id', $cat);
+    }
+    if ($ex = request('exclude')) {
+        $q->where('id', '!=', $ex);
+    }
+    $limit = (int) request('limit', 20);
+    $limit = $limit > 0 && $limit <= 100 ? $limit : 20;
+    $paginator = $q->orderByDesc('id')->paginate($limit);
     // Map image_path to full URL
     $paginator->getCollection()->transform(function($p){
         if ($p->image_path) {
@@ -205,6 +212,18 @@ Route::get('/products', function(){
         return $p;
     });
     return $paginator;
+});
+
+Route::get('/products/{id}', function($id){
+    $product = Product::with(['user:id,name,store_name'])
+        ->select(['id','user_id','name','price','price_discount','image_path','description','brand','sku','stock_qty','category_id','subcategory_id','created_at'])
+        ->findOrFail($id);
+    
+    if ($product->image_path) {
+        $product->image_path = Storage::disk('public')->url($product->image_path);
+    }
+    
+    return $product;
 });
 // Public Posts endpoints
 Route::get('/posts', function(){

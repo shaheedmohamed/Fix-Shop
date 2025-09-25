@@ -14,7 +14,9 @@
               <span v-if="oldPrice(p)" class="old">EGP {{ oldPrice(p).toLocaleString(undefined,{minimumFractionDigits:0}) }}</span>
             </div>
           </div>
-          <button class="add-btn" @click="addToCart(p)"><i class="fa-solid fa-cart-shopping me-2"></i> Add to cart</button>
+          <RouterLink :to="{ name: 'product-detail', params: { id: p.id } }" class="add-btn text-decoration-none text-white d-block text-center">
+            <i class="fa-solid fa-eye me-2"></i> View Details
+          </RouterLink>
           <div class="added-banner" v-if="added.has(p.id)">Added!</div>
         </div>
       </div>

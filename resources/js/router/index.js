@@ -38,6 +38,7 @@ import VendorPostForm from '../components/pages/vendor/PostForm.vue'
 import ProductsPublic from '../components/pages/Products.vue'
 import PostsPublic from '../components/pages/Posts.vue'
 import CartPage from '../components/pages/Cart.vue'
+import ProductDetail from '../components/pages/ProductDetail.vue'
 
 export const routes = [
   { path: '/', name: 'home', component: LandingPage, meta: { title: 'Home' } },
@@ -58,6 +59,7 @@ export const routes = [
   { path: '/practice', name: 'practice', component: AdaptivePracticePage, meta: { title: 'Adaptive Practice' } },
   // Public listings
   { path: '/products', name: 'products', component: ProductsPublic, meta: { title: 'Products' } },
+  { path: '/products/:id', name: 'product-detail', component: ProductDetail, props: true, meta: { title: 'Product Details' } },
   { path: '/posts', name: 'posts', component: PostsPublic, meta: { title: 'Posts' } },
   { path: '/cart', name: 'cart', component: CartPage, meta: { title: 'Cart' } },
   // Admin area under shared layout

@@ -2,7 +2,8 @@ import { reactive } from 'vue'
 
 const state = reactive({
   items: [], // {id, name, price, qty, image}
-  toastMsg: ''
+  toastMsg: '',
+  sidebarOpen: false
 })
 
 function save(){
@@ -43,6 +44,10 @@ function toast(msg){
   toastTimer = setTimeout(()=>{ state.toastMsg = '' }, 1500)
 }
 
+function openSidebar(){ state.sidebarOpen = true }
+function closeSidebar(){ state.sidebarOpen = false }
+function toggleSidebar(){ state.sidebarOpen = !state.sidebarOpen }
+
 load()
 
-export default { state, add, remove, clear, count, total, toast }
+export default { state, add, remove, clear, count, total, toast, openSidebar, closeSidebar, toggleSidebar }

@@ -45,10 +45,10 @@
               <RouterLink class="btn btn-outline-primary me-2" :to="dashboardRoute" @click="closeMenu">
                 <i class="fa-solid fa-gauge-high me-2"></i>{{ dashboardLabel }}
               </RouterLink>
-              <RouterLink class="btn btn-light position-relative me-2" :to="{ name: 'cart' }" @click="closeMenu" title="Cart">
+              <button class="btn btn-light position-relative me-2" @click="toggleCart" title="Cart">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span v-if="cartCount>0" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">{{ cartCount }}</span>
-              </RouterLink>
+              </button>
               <div class="dropdown" ref="dropdownWrap">
                 <button class="btn btn-light d-flex align-items-center" @click="toggleDropdown" :aria-expanded="dropdown ? 'true' : 'false'" aria-haspopup="menu">
                   <i class="fa-regular fa-user me-2"></i>{{ userName }}
@@ -135,7 +135,8 @@ export default {
     })
 
     const cartCount = computed(() => cart.count())
-    return { isOpen, dropdown, isScrolled, isAuthed, userName, isAdminUser, dashboardRoute, dashboardLabel, toggleMenu, closeMenu, handleLogout, toggleDropdown, dropdownWrap, store, cartCount }
+    const toggleCart = () => { cart.toggleSidebar(); closeMenu() }
+    return { isOpen, dropdown, isScrolled, isAuthed, userName, isAdminUser, dashboardRoute, dashboardLabel, toggleMenu, closeMenu, handleLogout, toggleDropdown, dropdownWrap, store, cartCount, toggleCart }
   }
 }
 </script>
