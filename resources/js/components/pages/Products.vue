@@ -32,12 +32,14 @@ export default {
   name: 'ProductsPublicPage',
   data(){ return { items: [], loading: false, added: new Set() } },
   methods: {
-    imageUrl(p){
-      if (!p) return ''
-      if (typeof p !== 'string') return ''
+    imageUrl(p) {
+      if (!p) return '/images/placeholder-product.svg'
+      if (typeof p !== 'string') return '/images/placeholder-product.svg'
       if (p.startsWith('http')) return p
       if (p.startsWith('/storage/')) return p
-      return `/storage/${p}`
+      // Fix for Laravel storage path
+      if (p.startsWith('img/')) return `/storage/${p}`
+      return `/storage/img/${p}`
     },
     displayPrice(p){
       const price = Number(p.price || 0)
@@ -65,8 +67,17 @@ export default {
     },
     async load(){
       this.loading = true
-      try{ const { data } = await axios.get('/api/products'); this.items = data?.data || data || [] }
-      catch(e){ /* ignore */ }
+      try{ 
+        console.log('Loading products from API...')
+        const { data } = await axios.get('/api/products')
+        console.log('Products API response:', data)
+        this.items = data?.data || data || []
+        console.log('Products loaded:', this.items.length)
+      }
+      catch(e){ 
+        console.error('Failed to load products:', e)
+        alert('Failed to load products: ' + e.message)
+      }
       finally{ this.loading = false }
     }
   },

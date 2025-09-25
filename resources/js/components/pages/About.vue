@@ -12,9 +12,9 @@
               <RouterLink :to="{ name: 'chat' }" class="btn btn-primary btn-lg px-4 btn-shine">
                 <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Try the AI Tutor
               </RouterLink>
-              <a href="#team" class="btn btn-outline-primary btn-lg px-4">
-                <i class="fa-solid fa-people-group me-2"></i>Meet the Team
-              </a>
+              <RouterLink :to="{ name: 'features' }" class="btn btn-outline-primary btn-lg px-4">
+                <i class="fa-solid fa-star me-2"></i>Our Features
+              </RouterLink>
             </div>
           </div>
           <div class="col-lg-5" v-reveal>
@@ -83,93 +83,39 @@
       </div>
     </section>
 
-    <!-- Team Section -->
-    <section id="team" class="py-5">
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
       <div class="container">
-        <div class="text-center mb-4" v-reveal>
-          <h2 class="fw-bold">Meet the Team</h2>
-          <p class="text-muted mb-0">Five builders. One mission.</p>
+        <div class="text-center mb-5" v-reveal>
+          <h2 class="fw-bold">Our Features</h2>
+          <p class="text-muted">Explore the tools that make our platform amazing</p>
         </div>
-        <div class="team-slider center-focus" @mouseenter="pauseAuto()" @mouseleave="resumeAuto()">
-          <div class="stage mx-auto">
-            <div class="slide-item left" :key="prevIndex" @click="go(prevIndex)" role="button">
-              <div class="team-card compact">
-                <div class="avatar-wrap">
-                  <div class="avatar avatar-md" :style="{ background: team[prevIndex].bg }">
-                    <img v-if="team[prevIndex].img" :src="team[prevIndex].img" :alt="team[prevIndex].name" class="avatar-img"/>
-                    <span v-else>{{ initials(team[prevIndex].name) }}</span>
-                  </div>
-                </div>
-                <div class="info text-center mt-4">
-                  <h6 class="mb-1">{{ team[prevIndex].name }}</h6>
-                  <div class="text-muted small">{{ team[prevIndex].role }}</div>
-                </div>
+        <div class="row g-4">
+          <div class="col-sm-6 col-lg-4" v-for="(f,i) in features" :key="i" v-reveal>
+            <div class="card border-0 shadow-sm h-100 card-hover">
+              <div class="card-body p-4">
+                <div class="fs-1 text-primary mb-3"><i :class="f.icon"></i></div>
+                <h5 class="fw-semibold">{{ f.title }}</h5>
+                <p class="text-muted mb-0">{{ f.text }}</p>
               </div>
             </div>
-            <div class="slide-item center" :key="currentIndex" @click="openMember(currentMember)" role="button">
-              <div class="team-card emphasized">
-                <div class="avatar-wrap">
-                  <div class="avatar avatar-xl" :style="{ background: currentMember.bg }">
-                    <img v-if="currentMember.img" :src="currentMember.img" :alt="currentMember.name" class="avatar-img"/>
-                    <span v-else>{{ initials(currentMember.name) }}</span>
-                    <!-- Hover social overlay -->
-                    <div class="social-overlay">
-                      <a v-if="currentMember.linkedIn" :href="currentMember.linkedIn" target="_blank" @click.stop title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
-                      <a v-if="currentMember.github" :href="currentMember.github" target="_blank" @click.stop title="GitHub"><i class="fa-brands fa-github"></i></a>
-                      <a v-if="currentMember.x" :href="currentMember.x" target="_blank" @click.stop title="X"><i class="fa-brands fa-x-twitter"></i></a>
-                    </div>
-                  </div>
-                </div>
-                <div class="info text-center mt-4">
-                  <h5 class="mb-1">{{ currentMember.name }}</h5>
-                  <div class="text-muted">{{ currentMember.role }}</div>
-                </div>
-                <div class="mt-3 text-muted small text-center">{{ currentMember.bio }}</div>
-              </div>
-            </div>
-            <div class="slide-item right" :key="nextIndex" @click="go(nextIndex)" role="button">
-              <div class="team-card compact">
-                <div class="avatar-wrap">
-                  <div class="avatar avatar-md" :style="{ background: team[nextIndex].bg }">
-                    <img v-if="team[nextIndex].img" :src="team[nextIndex].img" :alt="team[nextIndex].name" class="avatar-img"/>
-                    <span v-else>{{ initials(team[nextIndex].name) }}</span>
-                  </div>
-                </div>
-                <div class="info text-center mt-4">
-                  <h6 class="mb-1">{{ team[nextIndex].name }}</h6>
-                  <div class="text-muted small">{{ team[nextIndex].role }}</div>
-                </div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <h3 class="fw-bold text-center mb-4" v-reveal>How it works</h3>
+          <div class="row g-3 row-cols-1 row-cols-md-2 row-cols-lg-4">
+            <div class="col" v-for="(s,j) in steps" :key="j" v-reveal>
+              <div class="h-100 text-center p-4 bg-white rounded-4 card-hover shadow-sm">
+                <div class="fs-2 text-primary mb-2"><i :class="s.icon"></i></div>
+                <div class="fw-semibold">{{ s.title }}</div>
+                <div class="text-muted small">{{ s.text }}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </section>
-
-    <!-- Member Modal -->
-    <div v-if="showMember" class="member-overlay" @click.self="closeMember">
-      <div class="member-card">
-        <header class="p-2 text-end">
-          <button class="btn-close" aria-label="Close" @click="closeMember"></button>
-        </header>
-        <div class="p-4">
-          <div class="text-center modal-hero">
-            <div class="avatar avatar-xxl mx-auto" :style="{ background: selectedMember?.bg }">
-              <img v-if="selectedMember?.img" :src="selectedMember.img" :alt="selectedMember?.name" class="avatar-img"/>
-              <span v-else>{{ initials(selectedMember?.name || '') }}</span>
-            </div>
-            <h4 class="mt-3 mb-1">{{ selectedMember?.name }}</h4>
-            <div class="text-muted">{{ selectedMember?.role }}</div>
-            <div class="social mt-3" v-if="selectedMember?.linkedIn || selectedMember?.github || selectedMember?.x">
-              <a v-if="selectedMember?.linkedIn" :href="selectedMember.linkedIn" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
-              <a v-if="selectedMember?.github" :href="selectedMember.github" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a>
-              <a v-if="selectedMember?.x" :href="selectedMember.x" target="_blank" title="X"><i class="fa-brands fa-x-twitter"></i></a>
-            </div>
-          </div>
-          <p class="text-muted mt-3 mb-0 text-center">{{ selectedMember?.bio }}</p>
-        </div>
-      </div>
-    </div>
 
     <Footer />
   </div>
@@ -186,54 +132,32 @@ export default {
         { icon:'fa-solid fa-book-open', title:'Choose subject', text:'Pick what to learn' },
         { icon:'fa-solid fa-bolt', title:'Quick test', text:'Gauge level' },
         { icon:'fa-solid fa-brain', title:'AI selects method', text:'Fit your style' },
-        { icon:'fa-solid fa-bell', title:'Reminders', text:'Stay consistent' },
         { icon:'fa-solid fa-graduation-cap', title:'Lessons', text:'Daily delivery' },
       ],
-      team: [
-        { name: 'Ruqayya Amr Zahran', role: 'Designer', img: '/images/Ruqayya Amr.jpg', bg: 'linear-gradient(135deg,#0d6efd,#6610f2)', bio: 'Designs memorable experiences and consistent visuals.' },
-        { name: 'mariam ahmed', role: 'Team leader', img: '/images/mariam ahmed.jpg', bg: 'linear-gradient(135deg,#20c997,#0dcaf0)', bio: 'Leads the team and aligns goals to delivery.' },
-        { name: 'Haneen', role: 'web developer', img: '/images/Haneen.jpg', bg: 'linear-gradient(135deg,#ffc107,#fd7e14)', bio: 'Builds web features with care and performance.' },
-        { name: 'Shaheed Mohamed', role: 'Fullstack developer', img: '/images/Shaheed mohamed.jpg', bg: 'linear-gradient(135deg,#198754,#0d6efd)', bio: 'Delivers end‑to‑end solutions across the stack.' },
-        { name: 'Habiba omar', role: 'Designer', img: '/images/Habiba omar.jpg', bg: 'linear-gradient(135deg,#e83e8c,#6f42c1)', bio: 'Designer focused on elegant, user‑centric visuals.' },
+      features: [
+        { icon: 'fa-solid fa-shopping-cart', title: 'Easy Shopping', text: 'Browse and purchase products with just a few clicks' },
+        { icon: 'fa-solid fa-tools', title: 'Service Requests', text: 'Request any service and get offers from qualified providers' },
+        { icon: 'fa-solid fa-comments', title: 'Direct Communication', text: 'Chat directly with sellers and service providers' },
+        { icon: 'fa-solid fa-shield-alt', title: 'Secure Payments', text: 'Safe and secure payment processing for all transactions' },
+        { icon: 'fa-solid fa-truck', title: 'Fast Delivery', text: 'Quick and reliable delivery to your doorstep' },
+        { icon: 'fa-solid fa-star', title: 'Quality Assurance', text: 'All products and services are quality checked' }
       ],
-      showMember: false,
-      selectedMember: null,
-      // carousel state
-      currentIndex: 0,
-      autoTimer: null,
+      steps: [
+        { icon: 'fa-solid fa-user-plus', title: 'Sign Up', text: 'Create your account' },
+        { icon: 'fa-solid fa-search', title: 'Browse', text: 'Find what you need' },
+        { icon: 'fa-solid fa-shopping-bag', title: 'Purchase', text: 'Buy or request service' },
+        { icon: 'fa-solid fa-smile', title: 'Enjoy', text: 'Get your order' }
+      ]
     }
   },
   methods: {
-    initials(name){
-      return name.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase()
-    },
-    openMember(m){ this.selectedMember = m; this.showMember = true; document.body.classList.add('overflow-hidden') },
-    closeMember(){ this.showMember = false; this.selectedMember = null; document.body.classList.remove('overflow-hidden') },
-    onKey(e){ if(e.key==='Escape') this.closeMember() },
-    // carousel actions
-    next(){ if(this.team.length) this.currentIndex = (this.currentIndex + 1) % this.team.length },
-    prev(){ if(this.team.length) this.currentIndex = (this.currentIndex - 1 + this.team.length) % this.team.length },
-    go(i){ if(this.team.length) this.currentIndex = ((i % this.team.length) + this.team.length) % this.team.length },
-    startAuto(){
-      if(this.autoTimer) clearInterval(this.autoTimer)
-      this.autoTimer = setInterval(()=> this.next(), 3500)
-    },
-    pauseAuto(){ if(this.autoTimer){ clearInterval(this.autoTimer); this.autoTimer = null } },
-    resumeAuto(){ this.startAuto() }
-  },
-  computed: {
-    currentMember(){ return this.team[this.currentIndex] || this.team[0] },
-    prevIndex(){ const n = this.team.length; return n ? (this.currentIndex - 1 + n) % n : 0 },
-    nextIndex(){ const n = this.team.length; return n ? (this.currentIndex + 1) % n : 0 },
-  },
-  mounted(){ window.addEventListener('keydown', this.onKey); this.startAuto() },
-  beforeUnmount(){ window.removeEventListener('keydown', this.onKey); if(this.autoTimer) clearInterval(this.autoTimer) }
+    // Methods for About page functionality
+  }
 }
 </script>
 
 <style scoped>
 /* Hero */
-.about-page{ background: #f8faff }
 .hero-section{ background: radial-gradient(1200px 600px at -10% -10%, rgba(13,110,253,.12), transparent 40%), radial-gradient(900px 500px at 110% 110%, rgba(111,66,193,.12), transparent 40%) }
 .text-gradient{ background: linear-gradient(90deg,#0d6efd,#6f42c1); -webkit-background-clip: text; background-clip: text; color: transparent }
 .hero-card{ overflow: hidden }

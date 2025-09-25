@@ -33,6 +33,20 @@
           <i class="fa-solid fa-gear me-2"></i>
           <span>Settings</span>
         </RouterLink>
+        
+        <div class="menu-section">Marketplace</div>
+        <RouterLink :to="{ name: 'admin-products' }" class="menu-item" :class="{ active: routeName==='admin-products' }">
+          <i class="fa-solid fa-box me-2"></i>
+          <span>Products</span>
+        </RouterLink>
+        <RouterLink :to="{ name: 'admin-providers' }" class="menu-item" :class="{ active: routeName==='admin-providers' }">
+          <i class="fa-solid fa-store me-2"></i>
+          <span>Providers</span>
+        </RouterLink>
+        <RouterLink :to="{ name: 'admin-chats' }" class="menu-item" :class="{ active: routeName==='admin-chats' }">
+          <i class="fa-solid fa-comments me-2"></i>
+          <span>Chats</span>
+        </RouterLink>
       </div>
     </aside>
 

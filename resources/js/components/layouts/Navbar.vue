@@ -55,9 +55,33 @@
                   <i class="fa-solid fa-chevron-down ms-2 small"></i>
                 </button>
                 <div class="dropdown-menu end" v-if="dropdown" role="menu">
-                  <RouterLink class="dropdown-item" :to="{ name: 'profile' }" @click="closeMenu"><i class="fa-regular fa-id-badge me-2"></i>Profile</RouterLink>
-                  <RouterLink class="dropdown-item" :to="{ name: 'advisor' }" @click="closeMenu"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>Create plan with lumix</RouterLink>
-                  <button class="dropdown-item" @click="handleLogout"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</button>
+                  <div class="dropdown-header">
+                    <div class="fw-bold">{{ userName }}</div>
+                    <small class="text-muted">{{ userRole === 'admin' ? 'Administrator' : userRole === 'provider' ? 'Provider' : 'Customer' }}</small>
+                  </div>
+                  <div class="dropdown-divider"></div>
+                  <RouterLink class="dropdown-item" :to="{ name: 'dashboard' }" @click="closeMenu">
+                    <i class="fa-solid fa-gauge-high me-2"></i>Dashboard
+                  </RouterLink>
+                  <RouterLink class="dropdown-item" :to="{ name: 'profile' }" @click="closeMenu">
+                    <i class="fa-regular fa-id-badge me-2"></i>My Profile
+                  </RouterLink>
+                  <RouterLink v-if="userRole === 'buyer'" class="dropdown-item" :to="{ name: 'orders' }" @click="closeMenu">
+                    <i class="fa-solid fa-shopping-bag me-2"></i>My Orders
+                  </RouterLink>
+                  <RouterLink v-if="userRole === 'provider'" class="dropdown-item" :to="{ name: 'vendor-products' }" @click="closeMenu">
+                    <i class="fa-solid fa-box me-2"></i>My Products
+                  </RouterLink>
+                  <RouterLink v-if="userRole === 'provider'" class="dropdown-item" :to="{ name: 'vendor-communications' }" @click="closeMenu">
+                    <i class="fa-solid fa-comments me-2"></i>Communications
+                  </RouterLink>
+                  <div class="dropdown-divider"></div>
+                  <RouterLink class="dropdown-item" :to="{ name: 'settings' }" @click="closeMenu">
+                    <i class="fa-solid fa-cog me-2"></i>Settings
+                  </RouterLink>
+                  <button class="dropdown-item text-danger" @click="handleLogout">
+                    <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
+                  </button>
                 </div>
               </div>
             </template>
@@ -86,6 +110,7 @@ export default {
 
     const isAuthed = computed(() => auth.isAuthenticated())
     const userName = computed(() => auth.state.user?.name || 'Account')
+    const userRole = computed(() => auth.state.user?.role || 'buyer')
     const isAdminUser = computed(() => {
       const u = auth.state.user || {}
       return !!(u.is_admin || u.isAdmin || u.role === 'admin' || u.role === 'superadmin')
@@ -136,7 +161,7 @@ export default {
 
     const cartCount = computed(() => cart.count())
     const toggleCart = () => { cart.toggleSidebar(); closeMenu() }
-    return { isOpen, dropdown, isScrolled, isAuthed, userName, isAdminUser, dashboardRoute, dashboardLabel, toggleMenu, closeMenu, handleLogout, toggleDropdown, dropdownWrap, store, cartCount, toggleCart }
+    return { isOpen, dropdown, isScrolled, isAuthed, userName, userRole, isAdminUser, dashboardRoute, dashboardLabel, toggleMenu, closeMenu, handleLogout, toggleDropdown, dropdownWrap, store, cartCount, toggleCart }
   }
 }
 </script>

@@ -19,6 +19,9 @@ import AdminSettings from '../components/pages/admin/Settings.vue'
 import SubjectPage from '../components/pages/Subject.vue'
 import AdminSubjects from '../components/pages/admin/Subjects.vue'
 import AdminBooks from '../components/pages/admin/Books.vue'
+import AdminProducts from '../components/pages/admin/AdminProducts.vue'
+import AdminProviders from '../components/pages/admin/AdminProviders.vue'
+import AdminChats from '../components/pages/admin/AdminChats.vue'
 import ProfilePage from '../components/pages/Profile.vue'
 import AdminUserProfile from '../components/pages/admin/UserProfile.vue'
 import SubjectsPage from '../components/pages/Subjects.vue'
@@ -32,7 +35,11 @@ import VendorLayout from '../components/layouts/VendorLayout.vue'
 import VendorDashboard from '../components/pages/vendor/Dashboard.vue'
 import VendorProducts from '../components/pages/vendor/Products.vue'
 import VendorProductForm from '../components/pages/vendor/ProductForm.vue'
+import VendorProductEdit from '../components/pages/vendor/ProductEdit.vue'
 import VendorPosts from '../components/pages/vendor/Posts.vue'
+import VendorCommunications from '../components/pages/vendor/Communications.vue'
+import ChatConversation from '../components/pages/ChatConversation.vue'
+import AdminProductEdit from '../components/pages/admin/AdminProductEdit.vue'
 import VendorPostForm from '../components/pages/vendor/PostForm.vue'
 // Public listings
 import ProductsPublic from '../components/pages/Products.vue'
@@ -62,6 +69,7 @@ export const routes = [
   { path: '/products/:id', name: 'product-detail', component: ProductDetail, props: true, meta: { title: 'Product Details' } },
   { path: '/posts', name: 'posts', component: PostsPublic, meta: { title: 'Posts' } },
   { path: '/cart', name: 'cart', component: CartPage, meta: { title: 'Cart' } },
+  { path: '/chat/:id', name: 'chat-conversation', component: ChatConversation, props: true, meta: { title: 'Chat', requiresAuth: true } },
   // Admin area under shared layout
   {
     path: '/admin',
@@ -75,6 +83,10 @@ export const routes = [
       { path: 'settings', name: 'admin-settings', component: AdminSettings, meta: { title: 'Admin Settings' } },
       { path: 'subjects', name: 'admin-subjects', component: AdminSubjects, meta: { title: 'Admin Subjects' } },
       { path: 'books', name: 'admin-books', component: AdminBooks, meta: { title: 'Admin Books' } },
+      { path: 'products', name: 'admin-products', component: AdminProducts, meta: { title: 'Admin Products' } },
+      { path: 'products/:id/edit', name: 'admin-product-edit', component: AdminProductEdit, props: true, meta: { title: 'Edit Product' } },
+      { path: 'providers', name: 'admin-providers', component: AdminProviders, meta: { title: 'Admin Providers' } },
+      { path: 'chats', name: 'admin-chats', component: AdminChats, meta: { title: 'Admin Chats' } },
     ]
   },
   // Vendor area under vendor layout
@@ -86,8 +98,10 @@ export const routes = [
       { path: 'dashboard', name: 'vendor-dashboard', component: VendorDashboard, meta: { title: 'Vendor Dashboard' } },
       { path: 'products', name: 'vendor-products', component: VendorProducts, meta: { title: 'My Products' } },
       { path: 'products/new', name: 'vendor-product-new', component: VendorProductForm, meta: { title: 'Add Product' } },
+      { path: 'products/:id/edit', name: 'vendor-product-edit', component: VendorProductEdit, props: true, meta: { title: 'Edit Product' } },
       { path: 'posts', name: 'vendor-posts', component: VendorPosts, meta: { title: 'My Posts' } },
       { path: 'posts/new', name: 'vendor-post-new', component: VendorPostForm, meta: { title: 'Add Post' } },
+      { path: 'communications', name: 'vendor-communications', component: VendorCommunications, meta: { title: 'Communications' } },
     ]
   },
   { path: '/:pathMatch(.*)*', redirect: { name: 'home' } },

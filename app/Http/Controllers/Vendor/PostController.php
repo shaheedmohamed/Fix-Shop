@@ -33,7 +33,7 @@ class PostController extends Controller
         ]);
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('posts', 'public');
+            $imagePath = $request->file('image')->store('img', 'public');
         }
         $post = Post::create([
             'user_id' => $user->id,

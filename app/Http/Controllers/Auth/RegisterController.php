@@ -42,7 +42,7 @@ class RegisterController extends Controller
         // Handle optional logo upload for providers
         $logoPath = null;
         if ($role === 'provider' && $request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('logos', 'public');
+            $logoPath = $request->file('logo')->store('img', 'public');
         }
 
         $user = User::create([

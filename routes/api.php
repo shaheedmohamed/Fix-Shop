@@ -146,12 +146,102 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->prefix('admin')->group(function 
     Route::get('/catalog/subcategories', [AdminSubCategoryController::class, 'index']);
     Route::post('/catalog/subcategories', [AdminSubCategoryController::class, 'store']);
     Route::delete('/catalog/subcategories/{id}', [AdminSubCategoryController::class, 'destroy']);
+
+    // Admin: Products listing
+    Route::get('/products', function(){
+        $products = Product::with('user:id,name,store_name')->select(['id','name','price','image_path','user_id','created_at'])->orderByDesc('id')->paginate(20);
+        
+        // Fix image URLs
+        $products->getCollection()->transform(function($product){
+            if ($product->image_path) {
+                $url = Storage::disk('public')->url($product->image_path);
+                $product->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
+            }
+            return $product;
+        });
+        
+        return $products;
+    });
+
+    // Admin: Single product for editing
+    Route::get('/products/{id}', function($id){
+        $product = Product::with('user:id,name,store_name')->findOrFail($id);
+        if ($product->image_path) {
+            $product->image_path = Storage::disk('public')->url($product->image_path);
+        }
+        return $product;
+    });
+
+    // Admin: Update product
+    Route::post('/products/{id}', function(Request $request, $id){
+        $product = Product::findOrFail($id);
+        
+        $data = $request->validate([
+            'name' => ['required','string','max:255'],
+            'description' => ['nullable','string','max:5000'],
+            'price' => ['required','numeric','min:0'],
+            'price_discount' => ['nullable','numeric','min:0'],
+            'category_id' => ['nullable','integer','exists:categories,id'],
+            'subcategory_id' => ['nullable','integer','exists:subcategories,id'],
+            'brand' => ['nullable','string','max:100'],
+            'color' => ['nullable','string','max:50'],
+            'unit' => ['nullable','string','max:20'],
+            'size' => ['nullable','string','max:50'],
+            'sku' => ['nullable','string','max:255'],
+            'stock_qty' => ['nullable','integer','min:0'],
+            'min_order_qty' => ['nullable','integer','min:1'],
+            'status' => ['nullable','string','in:active,inactive,pending,rejected'],
+            'admin_notes' => ['nullable','string','max:1000'],
+            'seo_title' => ['nullable','string','max:255'],
+            'seo_description' => ['nullable','string'],
+            'seo_keywords' => ['nullable','string'],
+            'image' => ['nullable','image','max:4096']
+        ]);
+
+        if ($request->hasFile('image')) {
+            if ($product->image_path) Storage::disk('public')->delete($product->image_path);
+            $product->image_path = $request->file('image')->store('img', 'public');
+        }
+
+        foreach ($data as $key => $value) {
+            if ($key !== 'image') {
+                $product->{$key} = $value;
+            }
+        }
+        
+        $product->save();
+        return response()->json($product);
+    });
+
+    // Admin: Delete product
+    Route::delete('/products/{id}', function($id){
+        $product = Product::findOrFail($id);
+        if ($product->image_path) {
+            Storage::disk('public')->delete($product->image_path);
+        }
+        $product->delete();
+        return response()->json(['message' => 'Product deleted successfully']);
+    });
+
+    // Admin: Providers listing
+    Route::get('/providers', function(){
+        return User::where('role', 'provider')->select(['id','name','store_name','email','phone','created_at'])->orderByDesc('id')->paginate(20);
+    });
+
+    // Admin: Chats listing
+    Route::get('/chats', function(){
+        return App\Models\BuyerSellerConversation::with(['buyer:id,name', 'seller:id,name', 'product:id,name'])
+            ->select(['id','buyer_id','seller_id','product_id','created_at','updated_at'])
+            ->orderByDesc('updated_at')
+            ->paginate(20);
+    });
 });
 
 // Vendor (provider) routes
 Route::middleware('auth:sanctum')->prefix('vendor')->group(function(){
     // Products
     Route::get('/products', [VendorProductController::class, 'index']);
+    Route::get('/products/{id}', [VendorProductController::class, 'show']);
     Route::post('/products', [VendorProductController::class, 'store']);
     Route::post('/products/{id}', [VendorProductController::class, 'update']);
     Route::delete('/products/{id}', [VendorProductController::class, 'destroy']);
@@ -160,6 +250,19 @@ Route::middleware('auth:sanctum')->prefix('vendor')->group(function(){
     Route::get('/posts', [VendorPostController::class, 'index']);
     Route::post('/posts', [VendorPostController::class, 'store']);
     Route::delete('/posts/{id}', [VendorPostController::class, 'destroy']);
+    
+    // Communications (vendor chat conversations)
+    Route::get('/communications', function(){
+        $user = request()->user();
+        if ($user->role !== 'provider') return response()->json(['message'=>'Forbidden'], 403);
+        
+        return App\Models\BuyerSellerConversation::where('seller_id', $user->id)
+            ->with(['buyer:id,name,email', 'product:id,name', 'messages' => function($q) {
+                $q->latest()->limit(1)->with('sender:id,name');
+            }])
+            ->orderByDesc('updated_at')
+            ->get();
+    });
 });
 
 // AI Study Advisor (public)
@@ -191,49 +294,132 @@ Route::middleware('auth:sanctum')->group(function(){
 Route::get('/subjects', [SubjectController::class, 'index']);
 Route::get('/subjects/{slug}', [SubjectController::class, 'show']);
 
+// Public Catalog endpoints
+Route::get('/catalog/categories', function(){
+    return Category::with('subcategories:id,category_id,name,slug')->select(['id','name','slug'])->orderBy('name')->get();
+});
+Route::get('/catalog/subcategories', function(){
+    return SubCategory::select(['id','category_id','name','slug'])->orderBy('name')->get();
+});
+
+// Chat endpoints
+Route::middleware('auth:sanctum')->group(function(){
+    Route::post('/chat/start', [App\Http\Controllers\ChatController::class, 'start']);
+    Route::get('/chat/conversations', [App\Http\Controllers\ChatController::class, 'conversations']);
+    Route::get('/chat/conversations/{id}/messages', [App\Http\Controllers\ChatController::class, 'messages']);
+    Route::post('/chat/conversations/{id}/messages', [App\Http\Controllers\ChatController::class, 'sendMessage']);
+});
+
+// Service Requests endpoints
+Route::middleware('auth:sanctum')->group(function(){
+    Route::post('/service-requests', function(Request $request) {
+        $user = $request->user();
+        
+        $data = $request->validate([
+            'category' => 'required|string',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:2000',
+            'budget' => 'required|string',
+            'location' => 'nullable|string|max:255',
+            'deadline' => 'nullable|date|after:today',
+            'attachments.*' => 'nullable|image|max:2048'
+        ]);
+        
+        $attachments = [];
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('img', 'public');
+                $attachments[] = $path;
+            }
+        }
+        
+        $serviceRequest = App\Models\ServiceRequest::create([
+            'user_id' => $user->id,
+            'category' => $data['category'],
+            'title' => $data['title'],
+            'description' => $data['description'],
+            'budget' => $data['budget'],
+            'location' => $data['location'] ?? null,
+            'deadline' => $data['deadline'] ?? null,
+            'attachments' => $attachments
+        ]);
+        
+        return response()->json($serviceRequest, 201);
+    });
+    
+    Route::get('/service-requests', function(Request $request) {
+        $user = $request->user();
+        
+        $requests = App\Models\ServiceRequest::where('user_id', $user->id)
+            ->with(['offers' => function($q) {
+                $q->with('provider:id,name,store_name');
+            }])
+            ->orderByDesc('created_at')
+            ->get();
+            
+        return response()->json($requests);
+    });
+});
+
 // Public Products endpoints
 Route::get('/products', function(){
-    $q = Product::query()
-        ->select(['id','name','price','price_discount','image_path','description','created_at','category_id']);
-    if ($cat = request('category')) {
-        $q->where('category_id', $cat);
-    }
-    if ($ex = request('exclude')) {
-        $q->where('id', '!=', $ex);
-    }
-    $limit = (int) request('limit', 20);
-    $limit = $limit > 0 && $limit <= 100 ? $limit : 20;
-    $paginator = $q->orderByDesc('id')->paginate($limit);
-    // Map image_path to full URL
-    $paginator->getCollection()->transform(function($p){
-        if ($p->image_path) {
-            $p->image_path = Storage::disk('public')->url($p->image_path);
+    try {
+        \Log::info('Products API called');
+        $q = Product::query()
+            ->select(['id','name','price','price_discount','image_path','description','created_at','category_id']);
+        if ($cat = request('category')) {
+            $q->where('category_id', $cat);
         }
-        return $p;
-    });
-    return $paginator;
+        if ($ex = request('exclude')) {
+            $q->where('id', '!=', $ex);
+        }
+        $limit = (int) request('limit', 20);
+        $limit = $limit > 0 && $limit <= 100 ? $limit : 20;
+        $products = $q->orderByDesc('id')->get();
+        
+        \Log::info('Products found: ' . $products->count());
+        
+        // Map image_path to full URL
+        $products->transform(function($p){
+            if ($p->image_path) {
+                // Fix URL to use correct domain
+                $url = Storage::disk('public')->url($p->image_path);
+                $p->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
+            }
+            return $p;
+        });
+        
+        // Return simple array for now
+        return response()->json($products);
+    } catch (\Exception $e) {
+        \Log::error('Products API error: ' . $e->getMessage());
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
 });
 
 Route::get('/products/{id}', function($id){
     $product = Product::with(['user:id,name,store_name'])
         ->select(['id','user_id','name','price','price_discount','image_path','description','brand','sku','stock_qty','category_id','subcategory_id','created_at'])
         ->findOrFail($id);
-    
+
     if ($product->image_path) {
-        $product->image_path = Storage::disk('public')->url($product->image_path);
+        $url = Storage::disk('public')->url($product->image_path);
+        $product->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
     }
-    
+
     return $product;
 });
 // Public Posts endpoints
 Route::get('/posts', function(){
     $paginator = Post::query()
-        ->select(['id','content','image_path','created_at'])
+        ->select(['id','content','image_path','created_at','user_id'])
+        ->with('user:id,name,store_name')
         ->orderByDesc('id')
         ->paginate(20);
     $paginator->getCollection()->transform(function($p){
         if ($p->image_path) {
-            $p->image_path = Storage::disk('public')->url($p->image_path);
+            $url = Storage::disk('public')->url($p->image_path);
+            $p->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
         }
         return $p;
     });

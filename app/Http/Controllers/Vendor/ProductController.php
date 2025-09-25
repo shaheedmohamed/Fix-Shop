@@ -17,11 +17,27 @@ class ProductController extends Controller
         // Decorate image urls
         $items->transform(function($p){
             if ($p->image_path) {
-                $p->image_path = Storage::disk('public')->url($p->image_path);
+                $url = Storage::disk('public')->url($p->image_path);
+                $p->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
             }
             return $p;
         });
         return $items;
+    }
+
+    public function show(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role !== 'provider') return response()->json(['message'=>'Forbidden'], 403);
+        
+        $product = Product::where('user_id', $user->id)->findOrFail($id);
+        
+        if ($product->image_path) {
+            $url = Storage::disk('public')->url($product->image_path);
+            $product->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
+        }
+        
+        return $product;
     }
 
     public function store(Request $request)
@@ -49,7 +65,7 @@ class ProductController extends Controller
         ]);
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+            $imagePath = $request->file('image')->store('img', 'public');
         }
         $product = Product::create([
             'user_id' => $user->id,
@@ -72,7 +88,8 @@ class ProductController extends Controller
             'seo_keywords' => $data['seo_keywords'] ?? null,
         ]);
         if ($product->image_path) {
-            $product->image_path = Storage::disk('public')->url($product->image_path);
+            $url = Storage::disk('public')->url($product->image_path);
+            $product->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
         }
         return response()->json($product, 201);
     }
@@ -103,14 +120,15 @@ class ProductController extends Controller
         ]);
         if ($request->hasFile('image')) {
             if ($product->image_path) Storage::disk('public')->delete($product->image_path);
-            $product->image_path = $request->file('image')->store('products', 'public');
+            $product->image_path = $request->file('image')->store('img', 'public');
         }
         foreach (['name','description','price','price_discount','category_id','subcategory_id','brand','color','unit','size','sku','stock_qty','min_order_qty','seo_title','seo_description','seo_keywords'] as $f) {
             if (array_key_exists($f, $data)) $product->{$f} = $data[$f];
         }
         $product->save();
         if ($product->image_path) {
-            $product->image_path = Storage::disk('public')->url($product->image_path);
+            $url = Storage::disk('public')->url($product->image_path);
+            $product->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
         }
         return response()->json($product);
     }

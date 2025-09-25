@@ -10,16 +10,22 @@
           <i class="fa-solid fa-gauge-high me-2"></i>
           <span>Dashboard</span>
         </RouterLink>
+        
         <div class="menu-section">Manage</div>
         <RouterLink :to="{ name: 'vendor-products' }" class="menu-item" :class="{ active: routeName==='vendor-products' }">
           <i class="fa-solid fa-box me-2"></i>
           <span>Products</span>
         </RouterLink>
-        <RouterLink :to="{ name: 'vendor-posts' }" class="menu-item" :class="{ active: routeName==='vendor-posts' }">
-          <i class="fa-regular fa-newspaper me-2"></i>
+        <RouterLink :to="{ name: 'vendor-posts' }" class="menu-item" :class="{ active: routeName==='vendor-posts' || routeName==='vendor-post-new' }">
+          <i class="fa-solid fa-newspaper me-2"></i>
           <span>Posts</span>
         </RouterLink>
-        <div class="menu-section text-muted">Communications (soon)</div>
+        
+        <div class="menu-section">COMMUNICATIONS</div>
+        <RouterLink :to="{ name: 'vendor-communications' }" class="menu-item" :class="{ active: routeName==='vendor-communications' }">
+          <i class="fa-solid fa-comments me-2"></i>
+          <span>Communications</span>
+        </RouterLink>
       </div>
     </aside>
 

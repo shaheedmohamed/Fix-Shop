@@ -26,7 +26,7 @@
           </div>
           <div class="item-details">
             <div class="item-name">{{ item.name }}</div>
-            <div class="item-price">{{ Number(item.price).toLocaleString() }}DT</div>
+            <div class="item-price">EGP {{ Number(item.price).toLocaleString() }}</div>
             <div class="item-controls">
               <button class="qty-btn" @click="decreaseQty(item)">-</button>
               <span class="qty">{{ item.qty }}</span>
@@ -44,16 +44,16 @@
       <div class="cart-summary">
         <div class="summary-row">
           <span>Subtotal</span>
-          <span class="fw-bold">{{ subtotal.toLocaleString() }}DT</span>
+          <span class="fw-bold">EGP {{ subtotal.toLocaleString() }}</span>
         </div>
         <div class="summary-row">
           <span>Shipping</span>
-          <span>8DT</span>
+          <span>EGP 8</span>
         </div>
         <hr class="my-2">
         <div class="summary-row total">
           <span class="fw-bold">Total</span>
-          <span class="fw-bold">{{ (subtotal + 8).toLocaleString() }}DT</span>
+          <span class="fw-bold">EGP {{ (subtotal + 8).toLocaleString() }}</span>
         </div>
       </div>
       

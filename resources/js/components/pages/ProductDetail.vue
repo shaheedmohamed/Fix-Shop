@@ -25,8 +25,8 @@
           
           <div class="price-section mb-4">
             <div class="current-price">
-              <span class="price-amount">{{ displayPrice(product).toLocaleString() }} DT</span>
-              <span v-if="oldPrice(product)" class="old-price ms-2">{{ oldPrice(product).toLocaleString() }} DT</span>
+              <span class="price-amount">EGP {{ displayPrice(product).toLocaleString() }}</span>
+              <span v-if="oldPrice(product)" class="old-price ms-2">EGP {{ oldPrice(product).toLocaleString() }}</span>
             </div>
           </div>
 
@@ -56,9 +56,9 @@
               <i class="fa-solid fa-cart-shopping me-2"></i>
               {{ adding ? 'Adding...' : 'Add to Cart' }}
             </button>
-            <button class="btn btn-outline-secondary btn-lg">
-              <i class="fa-regular fa-heart me-2"></i>
-              Wishlist
+            <button class="btn btn-outline-primary btn-lg" @click="chatWithSeller" :disabled="chatting">
+              <i class="fa-regular fa-comments me-2"></i>
+              {{ chatting ? 'Starting chat...' : 'Chat with seller' }}
             </button>
           </div>
 
@@ -108,6 +108,7 @@
 
 <script>
 import axios from 'axios'
+import auth from '../../store/auth'
 import cart from '../../store/cart'
 
 export default {
@@ -119,16 +120,35 @@ export default {
       relatedProducts: [],
       qty: 1,
       adding: false,
-      loading: true
+      loading: true,
+      chatting: false
     }
   },
   methods: {
     imageUrl(p) {
-      if (!p) return '/images/placeholder-product.jpg'
-      if (typeof p !== 'string') return '/images/placeholder-product.jpg'
+      if (!p) return '/images/placeholder-product.svg'
+      if (typeof p !== 'string') return '/images/placeholder-product.svg'
       if (p.startsWith('http')) return p
       if (p.startsWith('/storage/')) return p
-      return `/storage/${p}`
+      // Fix for Laravel storage path
+      if (p.startsWith('img/')) return `/storage/${p}`
+      return `/storage/img/${p}`
+    },
+    async chatWithSeller(){
+      if(!auth.isAuthenticated()){ 
+        this.$router.push({ name: 'login', query: { redirect: this.$route.fullPath } }); 
+        return 
+      }
+      try{
+        this.chatting = true
+        const { data } = await axios.post('/api/chat/start', { seller_id: this.product.user_id, product_id: this.product.id })
+        // Redirect to a simple chat interface instead of messages
+        this.$router.push({ name: 'chat-conversation', params: { id: data.id } })
+      }catch(e){ 
+        console.error('Chat error:', e)
+        alert(e?.response?.data?.message || 'Failed to start chat') 
+      }
+      finally{ this.chatting = false }
     },
     displayPrice(p) {
       const price = Number(p.price || 0)

@@ -29,21 +29,21 @@
 
         <!-- Links -->
         <div class="col-6 col-lg-2">
-          <h6 class="text-uppercase small fw-bold mb-3">Product</h6>
+          <h6 class="text-uppercase small fw-bold mb-3">PRODUCT</h6>
           <ul class="list-unstyled m-0">
             <li><RouterLink to="/features" class="link">Features</RouterLink></li>
-            <li><RouterLink :to="{ name:'subjects' }" class="link">Subjects</RouterLink></li>
-            <li><RouterLink :to="{ name:'chat' }" class="link">AI Tutor</RouterLink></li>
-            <li><RouterLink to="/pricing" class="link">Pricing</RouterLink></li>
+            <li><RouterLink to="/products" class="link">Products</RouterLink></li>
+            <li><RouterLink to="/posts" class="link">Posts</RouterLink></li>
+            <li><RouterLink to="/about" class="link">About</RouterLink></li>
           </ul>
         </div>
         <div class="col-6 col-lg-2">
-          <h6 class="text-uppercase small fw-bold mb-3">Learn</h6>
+          <h6 class="text-uppercase small fw-bold mb-3">QUICK LINKS</h6>
           <ul class="list-unstyled m-0">
-            <li><RouterLink to="/blog" class="link">Blog</RouterLink></li>
-            <li><RouterLink to="/guides" class="link">Guides</RouterLink></li>
-            <li><RouterLink to="/roadmap" class="link">Roadmap</RouterLink></li>
-            <li><RouterLink to="/changelog" class="link">Changelog</RouterLink></li>
+            <li><RouterLink to="/contact" class="link">Contact</RouterLink></li>
+            <li><RouterLink to="/help" class="link">Help Center</RouterLink></li>
+            <li><RouterLink to="/privacy" class="link">Privacy</RouterLink></li>
+            <li><RouterLink to="/terms" class="link">Terms</RouterLink></li>
           </ul>
         </div>
         <div class="col-12 col-lg-4">
