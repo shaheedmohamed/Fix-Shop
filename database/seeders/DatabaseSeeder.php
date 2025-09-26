@@ -14,7 +14,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // (admin seeding removed)
-        // You can add default demo users or other seeds here if needed.
+        // \App\Models\User::factory(10)->create();
+
+        // \App\Models\User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+
+        // Seed shop categories and subcategories
+        $this->call([
+            CategorySeeder::class,
+        ]);
     }
 }

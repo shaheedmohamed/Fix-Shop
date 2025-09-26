@@ -5,7 +5,7 @@
         <i class="fa-regular fa-envelope me-1"></i> Contact
       </RouterLink>
       <button class="btn btn-link p-0 link-underline" @click="messageAdmin">
-        <i class="fa-regular fa-message me-1"></i> Message Admin
+        <i class="fa-regular fa-message me-1"></i> Support Team
       </button>
     </div>
   </div>
@@ -18,7 +18,7 @@ export default {
   methods: {
     async messageAdmin(){
       try {
-        const id = await messages.startConversationWithAdmin('Hi Admin!')
+        const id = await messages.startConversationWithAdmin('Support request: Hello! I need help.')
         if (id) this.$router.push({ name: 'messages', query: { c: id } })
       } catch (_) {
         this.$router.push({ name: 'messages' })

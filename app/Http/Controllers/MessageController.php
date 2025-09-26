@@ -58,6 +58,7 @@ class MessageController extends Controller
         $data = $request->validate([
             'user_id' => ['required','integer','exists:users,id'],
             'message' => ['nullable','string'],
+            'title' => ['nullable','string','max:255'],
         ]);
         $otherId = (int) $data['user_id'];
         if ($otherId === $user->id) return response()->json(['message' => 'Cannot start a conversation with yourself'], 422);
@@ -72,7 +73,7 @@ class MessageController extends Controller
             ->value('conversation_id');
 
         if (!$convId) {
-            $conv = Conversation::create([ 'title' => null ]);
+            $conv = Conversation::create([ 'title' => $data['title'] ?? null ]);
             $conv->participants()->attach([$user->id, $otherId]);
         } else {
             $conv = Conversation::findOrFail($convId);
@@ -102,7 +103,7 @@ class MessageController extends Controller
         if (!$admin) return response()->json(['message' => 'No admin available'], 404);
 
         // reuse start logic
-        $request->merge(['user_id' => $admin->id]);
+        $request->merge(['user_id' => $admin->id, 'title' => 'Support Ticket']);
         return $this->start($request);
     }
 

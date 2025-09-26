@@ -4,16 +4,12 @@
       <button class="btn btn-link text-decoration-none text-light d-flex align-items-center" @click="toggleAll">
         <i class="fa-solid fa-bars me-2"></i> All
       </button>
-      <RouterLink to="/deals" class="sec-link">Today's Deals</RouterLink>
-      <RouterLink to="/category/mobiles" class="sec-link">Mobile Phones</RouterLink>
-      <RouterLink to="/category/electronics" class="sec-link">Electronics</RouterLink>
-      <RouterLink to="/category/fashion" class="sec-link">Fashion</RouterLink>
-      <RouterLink to="/" class="sec-link">Home</RouterLink>
-      <RouterLink to="/category/games" class="sec-link">Video Games</RouterLink>
-      <RouterLink to="/category/appliances" class="sec-link">Appliances</RouterLink>
-      <RouterLink to="/category/grocery" class="sec-link">Grocery</RouterLink>
-      <RouterLink to="/category/perfumes" class="sec-link">Perfumes</RouterLink>
-      <RouterLink to="/account" class="sec-link">Your account</RouterLink>
+      <div v-for="c in categories" :key="c.id" class="sec-item" @mouseenter="open=c.id" @mouseleave="open=null">
+        <a href="#" class="sec-link" @click.prevent="goCategory(c)">{{ c.name }}</a>
+        <div v-if="c.subcategories?.length && open===c.id" class="dropdown-menu shadow">
+          <a v-for="s in c.subcategories" :key="s.id" href="#" class="dropdown-item" @click.prevent="goSub(c,s)">{{ s.name }}</a>
+        </div>
+      </div>
     </div>
 
     <!-- Slideout categories panel -->
@@ -24,45 +20,53 @@
           <button class="btn btn-sm btn-light" @click="toggleAll"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="list-group list-group-flush small">
-          <RouterLink v-for="(c,i) in categories" :key="i" :to="c.to" class="list-group-item list-group-item-action">
-            {{ c.title }}
-          </RouterLink>
+          <a v-for="c in categories" :key="c.id" href="#" class="list-group-item list-group-item-action" @click.prevent="goCategory(c)">
+            {{ c.name }}
+          </a>
         </div>
       </aside>
     </transition>
   </div>
-</template>
+  </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'SecondaryNav',
   data(){
     return {
       showAll: false,
-      categories: [
-        { title: 'New in', to: '/new' },
-        { title: 'Automobile', to: '/category/auto' },
-        { title: 'Beauty & Health', to: '/category/beauty' },
-        { title: 'Baby & Maternity', to: '/category/baby' },
-        { title: 'Jewelry & Accessories', to: '/category/jewelry' },
-        { title: 'Industry & Science', to: '/category/industry' },
-        { title: 'Electronics', to: '/category/electronics' },
-        { title: 'Home & Kitchen', to: '/category/home' },
-        { title: 'Office & School', to: '/category/office' },
-        { title: 'Men Large Sizes', to: '/category/plus-men' },
-      ]
+      categories: [],
+      open: null,
     }
   },
   methods: {
-    toggleAll(){ this.showAll = !this.showAll }
-  }
+    toggleAll(){ this.showAll = !this.showAll },
+    async fetchCats(){
+      try{
+        const { data } = await axios.get('/api/catalog/categories')
+        this.categories = data || []
+      } catch(_){}
+    },
+    goCategory(c){
+      this.$router.push({ path: '/', query: { category: c.id } })
+    },
+    goSub(c,s){
+      this.$router.push({ path: '/', query: { category: c.id, subcategory: s.id } })
+    }
+  },
+  mounted(){ this.fetchCats() }
 }
 </script>
 
 <style scoped>
-.secondary-nav { background: #0f2133; color: #cfe0f2; }
-.sec-link { color: #cfe0f2; text-decoration: none; white-space: nowrap; }
+.secondary-nav { background: #0f2133; color: #cfe0f2; position: relative; }
+.sec-item { position: relative; }
+.sec-link { color: #cfe0f2; text-decoration: none; white-space: nowrap; padding: 4px 6px; display: inline-block; }
 .sec-link:hover { color: #fff; text-decoration: underline; }
+.dropdown-menu { position: absolute; top: 100%; left: 0; background: #fff; border-radius: 8px; padding: 6px; min-width: 220px; }
+.dropdown-item { display: block; padding: 6px 10px; color: #1f2937; text-decoration: none; border-radius: 6px; }
+.dropdown-item:hover { background: #f3f4f6; }
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
