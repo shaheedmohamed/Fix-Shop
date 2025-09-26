@@ -42,6 +42,35 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/profile', [ProfileController::class, 'update']);
 });
 
+// Admin: list products with simple pagination
+Route::get('/admin/products', function(){
+    try{
+        $limit = (int) request('limit', 30);
+        $limit = $limit > 0 && $limit <= 1000 ? $limit : 30;
+        $page = max(1, (int) request('page', 1));
+
+        $q = Product::with(['user:id,name,store_name'])
+            ->select(['id','user_id','name','price','price_discount','image_path','created_at']);
+
+        $items = $q->orderByDesc('id')
+            ->skip(($page - 1) * $limit)
+            ->take($limit + 1)
+            ->get();
+
+        $hasMore = $items->count() > $limit;
+        if ($hasMore) $items = $items->slice(0, $limit)->values();
+
+        return response()->json([
+            'data' => $items,
+            'page' => $page,
+            'limit' => $limit,
+            'has_more' => $hasMore,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
 // Parent (guardian) routes
 Route::middleware('auth:sanctum')->prefix('parent')->group(function(){
     Route::get('/children', [ParentController::class, 'children']);
@@ -182,7 +211,7 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->prefix('admin')->group(function 
             'price' => ['required','numeric','min:0'],
             'price_discount' => ['nullable','numeric','min:0'],
             'category_id' => ['nullable','integer','exists:categories,id'],
-            'subcategory_id' => ['nullable','integer','exists:subcategories,id'],
+            'subcategory_id' => ['nullable','integer','exists:sub_categories,id'],
             'brand' => ['nullable','string','max:100'],
             'color' => ['nullable','string','max:50'],
             'unit' => ['nullable','string','max:20'],
@@ -429,31 +458,57 @@ Route::get('/products', function(){
     try {
         \Log::info('Products API called');
         $q = Product::query()
-            ->select(['id','name','price','price_discount','image_path','description','created_at','category_id']);
+            ->select(['id','name','price','price_discount','image_path','description','created_at','category_id','subcategory_id']);
         if ($cat = request('category')) {
             $q->where('category_id', $cat);
+        }
+        if ($sub = request('subcategory')) {
+            $q->where('subcategory_id', $sub);
+        }
+        if (!is_null(request('min'))) {
+            $q->where('price', '>=', (float) request('min'));
+        }
+        if (!is_null(request('max'))) {
+            $q->where('price', '<=', (float) request('max'));
         }
         if ($ex = request('exclude')) {
             $q->where('id', '!=', $ex);
         }
         $limit = (int) request('limit', 20);
         $limit = $limit > 0 && $limit <= 100 ? $limit : 20;
-        $products = $q->orderByDesc('id')->get();
+        $page = max(1, (int) request('page', 1));
+        $products = $q->orderByDesc('id')
+            ->skip(($page - 1) * $limit)
+            ->take($limit + 1) // fetch one extra to detect more
+            ->get();
         
         \Log::info('Products found: ' . $products->count());
         
         // Map image_path to full URL
         $products->transform(function($p){
             if ($p->image_path) {
-                // Fix URL to use correct domain
-                $url = Storage::disk('public')->url($p->image_path);
-                $p->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
+                $val = $p->image_path;
+                // keep absolute urls as-is
+                if (str_starts_with($val, 'http')) {
+                    // do nothing
+                } else {
+                    // Fix URL to use correct domain for storage paths
+                    $url = Storage::disk('public')->url($val);
+                    $p->image_path = str_replace('http://localhost', request()->getSchemeAndHttpHost(), $url);
+                }
             }
             return $p;
         });
         
-        // Return simple array for now
-        return response()->json($products);
+        $hasMore = $products->count() > $limit;
+        if ($hasMore) $products = $products->slice(0, $limit)->values();
+
+        return response()->json([
+            'data' => $products,
+            'page' => $page,
+            'limit' => $limit,
+            'has_more' => $hasMore,
+        ]);
     } catch (\Exception $e) {
         \Log::error('Products API error: ' . $e->getMessage());
         return response()->json(['error' => $e->getMessage()], 500);

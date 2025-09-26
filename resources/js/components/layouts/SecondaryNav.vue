@@ -40,24 +40,31 @@ export default {
       open: null,
     }
   },
-  methods: {
     toggleAll(){ this.showAll = !this.showAll },
     async fetchCats(){
       try{
         const { data } = await axios.get('/api/catalog/categories')
         this.categories = data || []
+      } catch(_){}}
+    ,
+    recordCatHit(id){
+      try{
+        const raw = localStorage.getItem('cat_hits')
+        const obj = raw ? JSON.parse(raw) : {}
+        obj[id] = (obj[id] || 0) + 1
+        localStorage.setItem('cat_hits', JSON.stringify(obj))
       } catch(_){}
     },
     goCategory(c){
-      this.$router.push({ path: '/', query: { category: c.id } })
+      this.recordCatHit(c.id)
+      this.$router.push({ name: 'products', query: { category: c.id } })
     },
     goSub(c,s){
-      this.$router.push({ path: '/', query: { category: c.id, subcategory: s.id } })
+      this.recordCatHit(c.id)
+      this.$router.push({ name: 'products', query: { category: c.id, subcategory: s.id } })
     }
   },
   mounted(){ this.fetchCats() }
-}
-</script>
 
 <style scoped>
 .secondary-nav { background: #0f2133; color: #cfe0f2; position: relative; }

@@ -1,36 +1,75 @@
 <template>
   <div class="container py-4">
-    <h2 class="mb-3">Products</h2>
-    <div class="row g-3 product-grid">
-      <div v-for="p in items" :key="p.id" class="col-sm-6 col-md-4 col-lg-3">
-        <div class="sp-card h-100">
-          <div class="thumb-wrap">
-            <img v-if="p.image_path" :src="imageUrl(p.image_path)" :alt="p.name" />
-          </div>
-          <div class="sp-body">
-            <div class="name">{{ p.name }}</div>
-            <div class="prices">
-              <span class="price">EGP {{ displayPrice(p).toLocaleString(undefined,{minimumFractionDigits:0}) }}</span>
-              <span v-if="oldPrice(p)" class="old">EGP {{ oldPrice(p).toLocaleString(undefined,{minimumFractionDigits:0}) }}</span>
+    <div class="row g-4">
+      <!-- Sidebar Filters -->
+      <div class="col-lg-3">
+        <ShopFilters :categories="categories" :loading-cats="loadingCats" @change="onFiltersChange" />
+      </div>
+
+      <!-- Products Grid -->
+      <div class="col-lg-9">
+        <div class="d-flex align-items-baseline justify-content-between mb-2">
+          <h2 class="mb-0">Products</h2>
+          <small class="text-muted">{{ items.length }} results</small>
+        </div>
+
+        <div v-if="loading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+        <div v-else class="row g-3 product-grid">
+          <div v-for="p in items" :key="p.id" class="col-sm-6 col-md-4 col-lg-3">
+            <div class="sp-card h-100">
+              <div class="thumb-wrap">
+                <img v-if="p.image_path" :src="imageUrl(p.image_path)" :alt="p.name" />
+              </div>
+              <div class="sp-body">
+                <div class="name">{{ p.name }}</div>
+                <div class="prices">
+                  <span class="price">EGP {{ displayPrice(p).toLocaleString(undefined,{minimumFractionDigits:0}) }}</span>
+                  <span v-if="oldPrice(p)" class="old">EGP {{ oldPrice(p).toLocaleString(undefined,{minimumFractionDigits:0}) }}</span>
+                </div>
+              </div>
+              <RouterLink :to="{ name: 'product-detail', params: { id: p.id } }" class="add-btn text-decoration-none text-white d-block text-center">
+                <i class="fa-solid fa-eye me-2"></i> View Details
+              </RouterLink>
+              <div class="added-banner" v-if="added.has(p.id)">Added!</div>
             </div>
           </div>
-          <RouterLink :to="{ name: 'product-detail', params: { id: p.id } }" class="add-btn text-decoration-none text-white d-block text-center">
-            <i class="fa-solid fa-eye me-2"></i> View Details
-          </RouterLink>
-          <div class="added-banner" v-if="added.has(p.id)">Added!</div>
+          <div v-if="!loading && items.length===0" class="text-muted">No products found.</div>
+        </div>
+        <div class="text-center mt-3" v-if="hasMore">
+          <button class="btn btn-outline-primary" @click="loadMore" :disabled="loading">
+            <span v-if="!loading">Load more</span>
+            <span v-else>Loading...</span>
+          </button>
         </div>
       </div>
-      <div v-if="!loading && items.length===0" class="text-muted">No products yet.</div>
     </div>
   </div>
-</template>
+  </template>
 
 <script>
 import axios from 'axios'
 import cart from '../../store/cart'
+import ShopFilters from '../shop/Filters.vue'
 export default {
   name: 'ProductsPublicPage',
-  data(){ return { items: [], loading: false, added: new Set() } },
+  components: { ShopFilters },
+  data(){ 
+    return { 
+      items: [], 
+      loading: false, 
+      added: new Set(),
+      // filters state
+      categories: [],
+      loadingCats: false,
+      filters: { category_id: null, min: null, max: null },
+      // pagination
+      page: 1,
+      limit: 50,
+      hasMore: false,
+    }
+  },
   methods: {
     imageUrl(p) {
       if (!p) return '/images/placeholder-product.svg'
@@ -65,23 +104,65 @@ export default {
       this.added.add(p.id)
       setTimeout(()=> this.added.delete(p.id), 1200)
     },
-    async load(){
+    async load(append=false){
       this.loading = true
       try{ 
-        console.log('Loading products from API...')
-        const { data } = await axios.get('/api/products')
-        console.log('Products API response:', data)
-        this.items = data?.data || data || []
-        console.log('Products loaded:', this.items.length)
+        // Build params from route query
+        const params = { page: this.page, limit: this.limit }
+        const q = this.$route?.query || {}
+        if (q.category) params.category = q.category
+        if (q.subcategory) params.subcategory = q.subcategory
+        if (q.min) params.min = q.min
+        if (q.max) params.max = q.max
+        const { data } = await axios.get('/api/products', { params })
+        const list = data?.data || data || []
+        this.hasMore = !!(data?.has_more)
+        this.items = append ? [...this.items, ...list] : list
       }
       catch(e){ 
         console.error('Failed to load products:', e)
         alert('Failed to load products: ' + e.message)
       }
       finally{ this.loading = false }
-    }
+    },
+    loadMore(){
+      if (this.hasMore && !this.loading) {
+        this.page += 1
+        this.load(true)
+      }
+    },
+    async fetchCategories(){
+      this.loadingCats = true
+      try{
+        const { data } = await axios.get('/api/catalog/categories')
+        this.categories = data || []
+      } finally { this.loadingCats = false }
+    },
+    onFiltersChange(f){
+      this.filters = { ...this.filters, ...f }
+      const q = { ...this.$route.query }
+      q.category = this.filters.category_id || undefined
+      q.min = this.filters.min || undefined
+      q.max = this.filters.max || undefined
+      this.$router.push({ query: q })
+    },
   },
-  mounted(){ this.load() }
+  mounted(){ 
+    // init local filters from route
+    const q = this.$route?.query || {}
+    this.filters.category_id = q.category ? Number(q.category) : null
+    this.filters.min = q.min ? Number(q.min) : null
+    this.filters.max = q.max ? Number(q.max) : null
+    this.fetchCategories()
+    this.page = 1
+    this.load() 
+  },
+  watch: {
+    '$route.query': {
+      handler(){ this.page = 1; this.load() },
+      deep: true
+    }
+  }
 }
 </script>
 

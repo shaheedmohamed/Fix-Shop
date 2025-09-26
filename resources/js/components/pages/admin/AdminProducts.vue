@@ -13,6 +13,7 @@
           <table class="table table-hover">
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Image</th>
                 <th>Name</th>
                 <th>Price</th>
@@ -23,6 +24,7 @@
             </thead>
             <tbody>
               <tr v-for="product in products" :key="product.id">
+                <td class="text-muted">#{{ product.id }}</td>
                 <td>
                   <img v-if="product.image_path" :src="imageUrl(product.image_path)" 
                        class="rounded" style="width: 50px; height: 50px; object-fit: cover;" />
@@ -61,6 +63,11 @@
         <div v-if="loading" class="text-center py-3">
           <div class="spinner-border" role="status"></div>
         </div>
+        <div class="d-flex justify-content-end mt-2" v-if="hasMore">
+          <button class="btn btn-outline-primary" @click="nextPage" :disabled="loading">
+            Next
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -75,7 +82,10 @@ export default {
     return {
       products: [],
       loading: false,
-      deleting: null
+      deleting: null,
+      page: 1,
+      limit: 1000,
+      hasMore: false,
     }
   },
   methods: {
@@ -87,15 +97,23 @@ export default {
       if (path.startsWith('img/')) return `/storage/${path}`
       return `/storage/img/${path}`
     },
-    async loadProducts() {
+    async loadProducts(append=false) {
       this.loading = true
       try {
-        const { data } = await axios.get('/api/admin/products')
-        this.products = data?.data || data || []
+        const { data } = await axios.get('/api/admin/products', { params: { page: this.page, limit: this.limit } })
+        const list = data?.data || data || []
+        this.hasMore = !!(data?.has_more)
+        this.products = append ? [...this.products, ...list] : list
       } catch (e) {
         console.error('Failed to load products:', e)
       } finally {
         this.loading = false
+      }
+    },
+    nextPage(){
+      if (this.hasMore && !this.loading) {
+        this.page += 1
+        this.loadProducts(true)
       }
     },
     liveDemo() {
@@ -121,6 +139,7 @@ export default {
     }
   },
   mounted() {
+    this.page = 1
     this.loadProducts()
   }
 }

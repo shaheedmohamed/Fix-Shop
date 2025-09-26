@@ -23,7 +23,9 @@ class DatabaseSeeder extends Seeder
 
         // Seed shop categories and subcategories
         $this->call([
+            UserSeeder::class,
             CategorySeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }

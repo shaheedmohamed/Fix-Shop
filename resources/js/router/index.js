@@ -22,6 +22,7 @@ import AdminBooks from '../components/pages/admin/Books.vue'
 import AdminProducts from '../components/pages/admin/AdminProducts.vue'
 import AdminProviders from '../components/pages/admin/AdminProviders.vue'
 import AdminChats from '../components/pages/admin/AdminChats.vue'
+import AdminCatalog from '../components/pages/admin/Catalog.vue'
 import ProfilePage from '../components/pages/Profile.vue'
 import AdminUserProfile from '../components/pages/admin/UserProfile.vue'
 import SubjectsPage from '../components/pages/Subjects.vue'
@@ -87,6 +88,7 @@ export const routes = [
       { path: 'products/:id/edit', name: 'admin-product-edit', component: AdminProductEdit, props: true, meta: { title: 'Edit Product' } },
       { path: 'providers', name: 'admin-providers', component: AdminProviders, meta: { title: 'Admin Providers' } },
       { path: 'chats', name: 'admin-chats', component: AdminChats, meta: { title: 'Admin Chats' } },
+      { path: 'catalog', name: 'admin-catalog', component: AdminCatalog, meta: { title: 'Catalog Manager' } },
     ]
   },
   // Vendor area under vendor layout

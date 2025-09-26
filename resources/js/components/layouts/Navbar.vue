@@ -43,17 +43,36 @@
               <RouterLink class="btn btn-primary" :to="{ name: 'register' }" @click="closeMenu">Register</RouterLink>
             </template>
             <template v-else>
-              <RouterLink class="btn btn-outline-primary me-2" :to="dashboardRoute" @click="closeMenu">
+              <RouterLink v-if="!isAdminUser" class="btn btn-outline-primary me-2" :to="dashboardRoute" @click="closeMenu">
                 <i class="fa-solid fa-gauge-high me-2"></i>{{ dashboardLabel }}
               </RouterLink>
               <button class="btn btn-light position-relative me-2" @click="toggleCart" title="Cart">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span v-if="cartCount>0" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">{{ cartCount }}</span>
               </button>
-              <button class="btn btn-light position-relative me-2" @click="$router.push({ name: 'messages' })" title="Notifications">
-                <i class="fa-regular fa-bell"></i>
-                <span v-if="store.state.unreadCount>0" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">{{ store.state.unreadCount }}</span>
-              </button>
+              <div class="position-relative me-2" ref="notifWrap">
+                <button class="btn btn-light position-relative" @click="toggleNotif" title="Notifications" aria-haspopup="menu" :aria-expanded="notifOpen ? 'true' : 'false'">
+                  <i class="fa-regular fa-bell"></i>
+                  <span v-if="store.state.unreadCount>0" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">{{ store.state.unreadCount }}</span>
+                </button>
+                <div v-if="notifOpen" class="notif-menu">
+                  <div class="notif-header d-flex align-items-center justify-content-between">
+                    <strong>Notifications</strong>
+                    <small class="text-muted" v-if="store.state.unreadCount>0">{{ store.state.unreadCount }} unread</small>
+                  </div>
+                  <div v-if="store.state.convLoading" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>
+                  <template v-else>
+                    <div v-if="recentUnread.length===0" class="px-3 py-2 text-muted small">No new messages</div>
+                    <button v-for="c in recentUnread" :key="c.id" class="notif-item" @click="openConv(c.id)">
+                      <div class="small text-truncate">{{ conversationTitle(c) }}</div>
+                      <div class="text-muted xsmall text-truncate" v-if="c.last_message">{{ c.last_message.content }}</div>
+                    </button>
+                    <div class="px-2 py-2 text-end">
+                      <button class="btn btn-sm btn-outline-secondary" @click="openNotificationsCenter">Open messages</button>
+                    </div>
+                  </template>
+                </div>
+              </div>
               <div class="dropdown" ref="dropdownWrap">
                 <button class="btn btn-light d-flex align-items-center" @click="toggleDropdown" :aria-expanded="dropdown ? 'true' : 'false'" aria-haspopup="menu">
                   <i class="fa-regular fa-user me-2"></i>{{ userName }}
@@ -65,8 +84,11 @@
                     <small class="text-muted">{{ userRole === 'admin' ? 'Administrator' : userRole === 'provider' ? 'Provider' : 'Customer' }}</small>
                   </div>
                   <div class="dropdown-divider"></div>
-                  <RouterLink class="dropdown-item" :to="{ name: 'dashboard' }" @click="closeMenu">
+                  <RouterLink v-if="userRole !== 'admin'" class="dropdown-item" :to="{ name: 'dashboard' }" @click="closeMenu">
                     <i class="fa-solid fa-gauge-high me-2"></i>Dashboard
+                  </RouterLink>
+                  <RouterLink v-else class="dropdown-item" :to="{ name: 'admin-dashboard' }" @click="closeMenu">
+                    <i class="fa-solid fa-user-shield me-2"></i>Admin Dashboard
                   </RouterLink>
                   <RouterLink class="dropdown-item" :to="{ name: 'profile' }" @click="closeMenu">
                     <i class="fa-regular fa-id-badge me-2"></i>My Profile
@@ -81,7 +103,7 @@
                     <i class="fa-solid fa-comments me-2"></i>Communications
                   </RouterLink>
                   <div class="dropdown-divider"></div>
-                  <RouterLink class="dropdown-item" :to="{ name: 'settings' }" @click="closeMenu">
+                  <RouterLink v-if="userRole==='admin'" class="dropdown-item" :to="{ name: 'admin-settings' }" @click="closeMenu">
                     <i class="fa-solid fa-cog me-2"></i>Settings
                   </RouterLink>
                   <button class="dropdown-item text-danger" @click="handleLogout">
@@ -103,6 +125,7 @@
 
 <script>
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import auth from '../../store/auth'
 import store from '../../store/messages'
 import cart from '../../store/cart'
@@ -113,10 +136,14 @@ export default {
   name: 'NavbarLayout',
   components: { UtilityBar, SecondaryNav },
   setup(_, { emit, expose }){
+    const router = useRouter()
     const isOpen = ref(false)
     const dropdown = ref(false)
     const dropdownWrap = ref(null)
+    const notifOpen = ref(false)
+    const notifWrap = ref(null)
     const isScrolled = ref(false)
+    let unreadTimer = null
 
     const isAuthed = computed(() => auth.isAuthenticated())
     const userName = computed(() => auth.state.user?.name || 'Account')
@@ -147,19 +174,34 @@ export default {
       window.location.href = '/'
     }
 
-    const toggleDropdown = () => { dropdown.value = !dropdown.value }
+    const toggleDropdown = () => { dropdown.value = !dropdown.value; if (dropdown.value) notifOpen.value = false }
+    const toggleNotif = async () => {
+      notifOpen.value = !notifOpen.value
+      if (notifOpen.value) {
+        dropdown.value = false
+        try { await store.fetchConversations() } catch(_) {}
+      }
+    }
     const onClickOutside = (e) => {
-      if (!dropdown.value) return
-      const el = dropdownWrap.value
-      if (el && !el.contains(e.target)) dropdown.value = false
+      // Close account dropdown if clicked outside
+      if (dropdown.value) {
+        const el = dropdownWrap.value
+        if (el && !el.contains(e.target)) dropdown.value = false
+      }
+      // Close notifications dropdown if clicked outside
+      if (notifOpen.value) {
+        const el2 = notifWrap.value
+        if (el2 && !el2.contains(e.target)) notifOpen.value = false
+      }
     }
 
-    let unreadTimer = null
     onMounted(() => {
+      // scroll state
       onScroll()
       window.addEventListener('scroll', onScroll, { passive: true })
+      // outside click for account dropdown
       document.addEventListener('click', onClickOutside, { passive: true })
-      // messages unread polling
+      // unread notifications polling
       store.refreshUnread()
       unreadTimer = setInterval(() => store.refreshUnread(), 10000)
     })
@@ -170,27 +212,77 @@ export default {
     })
 
     const cartCount = computed(() => cart.count())
+    const recentUnread = computed(() => {
+      try {
+        return (store.state.conversations || [])
+          .filter(c => (c.unread || 0) > 0)
+          .slice(0, 5)
+      } catch { return [] }
+    })
+    const conversationTitle = (c) => {
+      if (c?.title) return c.title
+      const names = (c?.participants || []).map(p => p.name).join(', ')
+      return names || 'New message'
+    }
+    const openConv = async (id) => {
+      try {
+        await store.openConversation(id)
+        notifOpen.value = false
+        const c = (store.state.conversations || []).find(x => x.id === id)
+        const isSupport = (c?.title || '').toLowerCase().includes('support')
+        if (isSupport) {
+          await router.push({ name: 'messages', query: { c: id } })
+        } else if (userRole.value === 'provider') {
+          await router.push({ name: 'vendor-communications' })
+        } else {
+          // fallback: non-support convo for non-provider goes to messages list
+          await router.push({ name: 'messages', query: { c: id } })
+        }
+      } catch(_) {}
+    }
+    const openNotificationsCenter = async () => {
+      notifOpen.value = false
+      if (userRole.value === 'provider') {
+        await router.push({ name: 'vendor-communications' })
+      } else {
+        await router.push({ name: 'messages' })
+      }
+    }
     const toggleCart = () => { cart.toggleSidebar(); closeMenu() }
-    return { isOpen, dropdown, isScrolled, isAuthed, userName, userRole, isAdminUser, dashboardRoute, dashboardLabel, toggleMenu, closeMenu, handleLogout, toggleDropdown, dropdownWrap, store, cartCount, toggleCart }
+    
+    return {
+      isOpen,
+      dropdown,
+      dropdownWrap,
+      notifOpen,
+      notifWrap,
+      isScrolled,
+      isAuthed,
+      userName,
+      userRole,
+      isAdminUser,
+      dashboardRoute,
+      dashboardLabel,
+      toggleMenu,
+      closeMenu,
+      handleLogout,
+      toggleDropdown,
+      toggleNotif,
+      cartCount,
+      toggleCart,
+      recentUnread,
+      conversationTitle,
+      openConv,
+      openNotificationsCenter,
+      store,
+    }
   }
 }
 </script>
 
 <style scoped>
-/* Container and glass effect */
-.sp-navbar {
-  --bg: rgba(255, 255, 255, 0.3);
-  --bd: rgba(255, 255, 255, 0.35);
-  --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-  position: sticky;
-  top: 0;
-  z-index: 1030;
-  background: var(--bg);
-  backdrop-filter: saturate(160%) blur(16px);
-  -webkit-backdrop-filter: saturate(160%) blur(16px);
-  border-bottom: 1px solid var(--bd);
-  box-shadow: var(--shadow);
-  padding: 14px 0; /* increase height */
+.sp-navbar.scrolled {
+  --bg: rgba(255, 255, 255, 0.7);
 }
 .sp-navbar.scrolled {
   --bg: rgba(255, 255, 255, 0.7);
@@ -249,4 +341,11 @@ export default {
 
 /* Subtle glow line */
 .top-glow { position: absolute; inset: 0 0 auto 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(99,102,241,.35), rgba(6,182,212,.35), transparent); opacity: .8; }
+
+/* Notifications dropdown */
+.notif-menu { position: absolute; right: 0; top: calc(100% + 6px); width: 280px; background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: .75rem; box-shadow: 0 10px 30px rgba(2,6,23,.12); overflow: hidden; z-index: 20; }
+.notif-header { padding: .5rem .75rem; border-bottom: 1px solid rgba(2,6,23,.06); background: #f8fafc; }
+.notif-item { display: block; width: 100%; text-align: left; padding: .5rem .75rem; background: transparent; border: 0; border-bottom: 1px solid rgba(2,6,23,.06); }
+.notif-item:hover { background: rgba(99,102,241,.06); }
+.xsmall { font-size: .75rem; }
 </style>

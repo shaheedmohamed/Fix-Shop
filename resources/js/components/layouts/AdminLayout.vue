@@ -39,6 +39,10 @@
           <i class="fa-solid fa-box me-2"></i>
           <span>Products</span>
         </RouterLink>
+        <RouterLink :to="{ name: 'admin-catalog' }" class="menu-item" :class="{ active: routeName==='admin-catalog' }">
+          <i class="fa-solid fa-sitemap me-2"></i>
+          <span>Catalog</span>
+        </RouterLink>
         <RouterLink :to="{ name: 'admin-providers' }" class="menu-item" :class="{ active: routeName==='admin-providers' }">
           <i class="fa-solid fa-store me-2"></i>
           <span>Providers</span>
