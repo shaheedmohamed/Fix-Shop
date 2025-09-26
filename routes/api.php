@@ -474,6 +474,18 @@ Route::get('/products', function(){
         if ($ex = request('exclude')) {
             $q->where('id', '!=', $ex);
         }
+        if ($term = trim((string) request('q', ''))) {
+            $q->where(function($w) use ($term){
+                $like = '%'.$term.'%';
+                $w->where('name','like',$like)
+                  ->orWhere('description','like',$like)
+                  ->orWhere('brand','like',$like)
+                  ->orWhere('sku','like',$like)
+                  ->orWhere('seo_title','like',$like)
+                  ->orWhere('seo_description','like',$like)
+                  ->orWhere('seo_keywords','like',$like);
+            });
+        }
         $limit = (int) request('limit', 20);
         $limit = $limit > 0 && $limit <= 100 ? $limit : 20;
         $page = max(1, (int) request('page', 1));

@@ -37,6 +37,12 @@
             </li>
           </ul>
 
+          <!-- Search -->
+          <form class="search-wrap d-none d-md-flex ms-2" @submit.prevent="submitSearch">
+            <input v-model.trim="searchTerm" type="search" class="form-control form-control-sm" placeholder="Search products..." aria-label="Search products" />
+            <button class="btn btn-sm btn-outline-primary ms-2" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+          </form>
+
           <div class="auth-area">
             <template v-if="!isAuthed">
               <RouterLink class="btn btn-outline-primary me-2" :to="{ name: 'login' }" @click="closeMenu">Login</RouterLink>
@@ -143,6 +149,7 @@ export default {
     const notifOpen = ref(false)
     const notifWrap = ref(null)
     const isScrolled = ref(false)
+    const searchTerm = ref('')
     let unreadTimer = null
 
     const isAuthed = computed(() => auth.isAuthenticated())
@@ -249,6 +256,18 @@ export default {
       }
     }
     const toggleCart = () => { cart.toggleSidebar(); closeMenu() }
+    const submitSearch = () => {
+      const q = (searchTerm.value || '').trim()
+      if (!q) return
+      try {
+        const raw = localStorage.getItem('search_hits')
+        const obj = raw ? JSON.parse(raw) : {}
+        obj[q] = (obj[q] || 0) + 1
+        localStorage.setItem('search_hits', JSON.stringify(obj))
+      } catch(_) {}
+      router.push({ name: 'products', query: { q } })
+      closeMenu()
+    }
     
     return {
       isOpen,
@@ -270,6 +289,8 @@ export default {
       toggleNotif,
       cartCount,
       toggleCart,
+      searchTerm,
+      submitSearch,
       recentUnread,
       conversationTitle,
       openConv,

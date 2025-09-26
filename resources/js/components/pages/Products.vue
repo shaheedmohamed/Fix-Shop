@@ -114,6 +114,7 @@ export default {
         if (q.subcategory) params.subcategory = q.subcategory
         if (q.min) params.min = q.min
         if (q.max) params.max = q.max
+        if (q.q) params.q = q.q
         const { data } = await axios.get('/api/products', { params })
         const list = data?.data || data || []
         this.hasMore = !!(data?.has_more)
